@@ -15,6 +15,7 @@ use Ttree\ContentObjectProxy\Manager\Contrat\LabelInterface;
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\Flow\Object\ObjectManagerInterface;
 use TYPO3\Flow\Reflection\ReflectionService;
+use TYPO3\Flow\Utility\Arrays;
 
 /**
  * ContentProxyableEntityService
@@ -22,12 +23,19 @@ use TYPO3\Flow\Reflection\ReflectionService;
 class ContentProxyableEntityService extends \TYPO3\TYPO3CR\Domain\Service\ContentProxyableEntityService
 {
     /**
+     * @var array
+     * @Flow\InjectConfiguration(path="types")
+     */
+    protected $types;
+
+    /**
      * @return array
      */
     public function getEntities()
     {
         $entities = parent::getEntities();
         $entities = array_map(function ($currentEntity) {
+            // Get label from entity based on LabelInterface
             $entitesWithLabel = self::getEntitiesWithLabel($this->objectManager);
             $matchingEntity = array_filter($entitesWithLabel, function ($entity) use ($currentEntity) {
                 return $entity['className'] === $currentEntity['className'];
@@ -36,6 +44,13 @@ class ContentProxyableEntityService extends \TYPO3\TYPO3CR\Domain\Service\Conten
                 $matchingEntity = array_pop($matchingEntity);
                 $currentEntity['label'] = $matchingEntity['label'];
             }
+
+            // Get label from settings
+            $label = Arrays::getValueByPath($this->types, [$currentEntity['className'], 'label']);
+            if ($label !== null) {
+                $currentEntity['label'] = $label;
+            }
+
             return $currentEntity;
         }, $entities);
         return $entities;

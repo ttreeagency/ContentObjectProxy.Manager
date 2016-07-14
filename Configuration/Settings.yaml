@@ -19,3 +19,6 @@ Ttree:
         - resource://TYPO3.Twitter.Bootstrap/Public/2/js/bootstrap.min.js
       styles:
         - resource://TYPO3.Twitter.Bootstrap/Public/2/css/bootstrap.min.css
+      types:
+        'Ttree\ArchitectesCh\Domain\Model\Activity':
+          label: 'Activity'
