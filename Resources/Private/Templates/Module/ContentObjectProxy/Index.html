@@ -16,16 +16,20 @@
 </f:section>
 
 <f:section name="content">
-    <f:render partial="EntitySelector" arguments="{entities: entities}"/>
     <f:if condition="{currentEntity}">
-        <f:for each="{tasks}" as="task">
-            <f:link.action action="execute"
-                           class="{task.buttonClass}"
-                           title="{task.description}"
-                           arguments="{currentEntity: currentEntity, task: task.__className}"
-                           addQueryString="TRUE">
-                <i class="icon-refresh"></i> {task.label}
-            </f:link.action>
-        </f:for>
+        <f:then>
+            <f:for each="{tasks}" as="task">
+                <f:link.action action="execute"
+                               class="{task.buttonClass}"
+                               title="{task.description}"
+                               arguments="{currentEntity: currentEntity, task: task.__className}"
+                               addQueryString="TRUE">
+                    <i class="icon-refresh"></i> {task.label}
+                </f:link.action>
+            </f:for>
+        </f:then>
+        <f:else>
+            <f:render partial="EntitySelector" arguments="{entities: entities}"/>
+        </f:else>
     </f:if>
 </f:section>
