@@ -9,6 +9,10 @@ To use the package, you have to install this package
 	
 	composer require "ttree/contentobjectproxy-manager"
 	
+## Screenshot
+
+![Basic Backend Module](http://g.recordit.co/N9v1hp4kpx.gif)
+
 ## Actions
 
 ### Refresh all entities
