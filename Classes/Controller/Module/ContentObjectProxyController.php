@@ -13,6 +13,7 @@ namespace Ttree\ContentObjectProxy\Manager\Controller\Module;
 
 use Ttree\ContentObjectProxy\Manager\Domain\Model\BatchTaskInterface;
 use Ttree\ContentObjectProxy\Manager\Domain\Model\EntityBasedTaskInterface;
+use Ttree\ContentObjectProxy\Manager\Domain\Service\ContentProxyableEntityService;
 use Ttree\ContentObjectProxy\Manager\Service\TaskService;
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\Flow\Error\Message;
@@ -20,7 +21,6 @@ use TYPO3\Neos\Controller\CreateContentContextTrait;
 use TYPO3\Neos\Controller\Module\AbstractModuleController;
 use TYPO3\Neos\Domain\Service\ContentContextFactory;
 use TYPO3\Neos\Service\UserService;
-use TYPO3\TYPO3CR\Domain\Service\ContentProxyableEntityService;
 
 /**
  * ContentObjectProxyController
@@ -119,7 +119,8 @@ class ContentObjectProxyController extends AbstractModuleController
         $availableEntities = array_map(function ($entity) use ($currentEntity) {
             $className = $entity['className'];
             return [
-                'name' => $className,
+                'label' => isset($entity['label']) ? $entity['label'] : $className,
+                'className' => $className,
                 'current' => $className === $currentEntity
             ];
         }, $entities);
