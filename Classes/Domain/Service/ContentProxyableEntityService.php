@@ -12,6 +12,7 @@ namespace Ttree\ContentObjectProxy\Manager\Domain\Service;
  */
 
 use Ttree\ContentObjectProxy\Manager\Contrat\LabelInterface;
+use Ttree\ContentObjectProxy\Manager\Service\TaskService;
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\Flow\Object\ObjectManagerInterface;
 use TYPO3\Flow\Reflection\ReflectionService;
@@ -23,10 +24,10 @@ use TYPO3\Flow\Utility\Arrays;
 class ContentProxyableEntityService extends \TYPO3\TYPO3CR\Domain\Service\ContentProxyableEntityService
 {
     /**
-     * @var array
-     * @Flow\InjectConfiguration(path="types")
+     * @var TaskService
+     * @Flow\Inject
      */
-    protected $types;
+    protected $taskService;
 
     /**
      * @return array
@@ -46,7 +47,7 @@ class ContentProxyableEntityService extends \TYPO3\TYPO3CR\Domain\Service\Conten
             }
 
             // Get label from settings
-            $label = Arrays::getValueByPath($this->types, [$currentEntity['className'], 'label']);
+            $label = $this->taskService->getLabel($currentEntity['className']);
             if ($label !== null) {
                 $currentEntity['label'] = $label;
             }

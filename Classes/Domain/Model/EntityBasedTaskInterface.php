@@ -21,10 +21,12 @@ use TYPO3\TYPO3CR\Domain\Service\Context;
 interface EntityBasedTaskInterface extends TaskInterface
 {
     /**
-     * @param object $currentEntity
+     * @param string $currentEntity
+     * @param array $data
      * @param Context $context
      * @param ContentObjectProxyController $controller
+     * @param \Closure $callback
      * @return array
      */
-    public function execute($currentEntity, Context $context, ContentObjectProxyController $controller);
+    public function execute($currentEntity, array $data, Context $context, ContentObjectProxyController $controller, \Closure $callback = null);
 }

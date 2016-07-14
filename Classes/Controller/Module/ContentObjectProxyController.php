@@ -15,6 +15,7 @@ use Ttree\ContentObjectProxy\Manager\Domain\Service\ContentProxyableEntityServic
 use Ttree\ContentObjectProxy\Manager\Service\TaskService;
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\Flow\Error\Message;
+use TYPO3\Flow\Reflection\ObjectAccess;
 use TYPO3\Neos\Controller\CreateContentContextTrait;
 use TYPO3\Neos\Controller\Module\AbstractModuleController;
 use TYPO3\Neos\Domain\Service\ContentContextFactory;
@@ -70,7 +71,7 @@ class ContentObjectProxyController extends AbstractModuleController
     {
         $this->assignAvailableEntities($currentEntity);
 
-        $taskObject = $this->taskService->getByIdentifier($task);
+        $taskObject = $this->taskService->getBatchTaskByIdentifier($task);
         $context = $this->createContentContext($this->userService->getPersonalWorkspaceName());
 
         $result = $taskObject->execute($currentEntity, $context, $this);
@@ -79,17 +80,72 @@ class ContentObjectProxyController extends AbstractModuleController
 
         $this->view->assign('actions', $this->taskService->getAllEntityBasedTasks());
 
-        $this->addFlashMessage('Task "%s" excuted with sucess', '', Message::SEVERITY_OK, [$taskObject->getLabel()]);
+        $this->addFlashMessage('Task "%s" executed with sucess', '', Message::SEVERITY_OK, [$taskObject->getLabel()]);
     }
 
     /**
      * @param string $currentEntity
+     * @param string $currentAction
      * @param string $identifier
-     * @param array $options
      */
-    public function wizardAction($currentEntity, $identifier, array $options = [])
+    public function wizardAction($currentEntity, $currentAction, $identifier)
     {
+        $entity = $this->persistenceManager->getObjectByIdentifier($identifier, $currentEntity);
 
+        $options = $this->taskService->getActionOptions($currentEntity, $currentAction);
+
+        $editableProperties = array_map(function ($propertyName) use ($entity) {
+            return [
+                'label' => ucfirst($propertyName),
+                'name' => $propertyName,
+                'value' => ObjectAccess::getProperty($entity, $propertyName)
+            ];
+        }, $options['editableProperties']);
+
+        $this->view->assignMultiple([
+            'currentEntity' => $currentEntity,
+            'currentAction' => $currentAction,
+            'identifier' => $identifier,
+            'options' => $options,
+            'editableProperties' => $editableProperties,
+            'entity' => $entity,
+        ]);
+    }
+
+    /**
+     * @param string $currentEntity
+     * @param string $currentAction
+     * @param string $identifier
+     * @param array $data
+     */
+    public function runAction($currentEntity, $currentAction, $identifier, array $data = [])
+    {
+        $options = $this->taskService->getActionOptions($currentEntity, $currentAction);
+        $taskObject = $this->taskService->getEntityBasedTaskByIdentifier($currentAction);
+
+        $valideRequest = true;
+        if (isset($options['uniqueProperty'])) {
+            $query = $this->persistenceManager->createQueryForType($currentEntity);
+            $nextValue = $data[$options['uniqueProperty']];
+            $query->matching($query->equals($options['uniqueProperty'], $nextValue));
+            if ($query->count() > 0) {
+                $this->addFlashMessage('Property "%s" must be unique, value "%s" is used by a other entity', 'Task failed', Message::SEVERITY_ERROR, [
+                    $options['uniqueProperty'],
+                    $nextValue
+                ]);
+                $valideRequest = false;
+            }
+        }
+
+        if ($valideRequest) {
+            $entity = $this->persistenceManager->getObjectByIdentifier($identifier, $currentEntity);
+
+            $processedEntity['nodes'] = $taskObject->execute($entity, $data, $this->createContentContext($this->userService->getPersonalWorkspaceName()), $this);
+
+            $this->addFlashMessage('Task "%s" executed with sucess', '', Message::SEVERITY_OK, [$taskObject->getLabel()]);
+        }
+
+        $this->forward('index', null, null, ['currentEntity' => $currentEntity]);
     }
 
     /**

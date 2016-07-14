@@ -35,7 +35,7 @@
                             <f:form action="wizard" style="display: inline-block;">
                                 <f:form.hidden name="currentEntity" value="{currentEntity}" />
                                 <f:form.hidden name="identifier" value="{entity.identifier}" />
-                                <f:form.hidden name="task" value="{action.__className}" />
+                                <f:form.hidden name="currentAction" value="{action.__className}" />
                                 <f:form.button class="{action.buttonClass}"
                                                title="{action.description}"
                                                data="{neos-toggle: 'tooltip', original-title: action.description}">

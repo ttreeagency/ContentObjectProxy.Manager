@@ -19,6 +19,7 @@ use TYPO3\Flow\Exception;
 use TYPO3\Flow\Object\ObjectManagerInterface;
 use TYPO3\Flow\Reflection\ObjectAccess;
 use TYPO3\Flow\Reflection\ReflectionService;
+use TYPO3\Flow\Utility\Arrays;
 
 /**
  * TaskService
@@ -34,13 +35,19 @@ class TaskService
     protected $objectManager;
 
     /**
+     * @var array
+     * @Flow\InjectConfiguration(path="types")
+     */
+    protected $types;
+
+    /**
      * Return all batch task
      *
      * @return array
      */
     public function getAllBatchTasks()
     {
-        return self::getBatchTask($this->objectManager);
+        return self::getBatchTasks($this->objectManager);
     }
 
     /**
@@ -55,12 +62,29 @@ class TaskService
 
     /**
      * @param string $identifier
-     * @return BatchTaskInterface|EntityBasedTaskInterface
+     * @return BatchTaskInterface
      * @throws Exception
      */
-    public function getByIdentifier($identifier)
+    public function getBatchTaskByIdentifier($identifier)
     {
-        $tasks = self::getBatchTask($this->objectManager);
+        $tasks = self::getBatchTasks($this->objectManager);
+        $tasks = array_filter($tasks, function ($task) use ($identifier) {
+            return $task['__className'] === $identifier;
+        });
+        if (count($tasks) === 0) {
+            throw new Exception('Invalid task identifier: ' . $identifier, 1468482110);
+        }
+        return $this->objectManager->get(array_pop($tasks)['__className']);
+    }
+
+    /**
+     * @param string $identifier
+     * @return EntityBasedTaskInterface
+     * @throws Exception
+     */
+    public function getEntityBasedTaskByIdentifier($identifier)
+    {
+        $tasks = self::getEntityBasedTasks($this->objectManager);
         $tasks = array_filter($tasks, function ($task) use ($identifier) {
             return $task['__className'] === $identifier;
         });
@@ -89,9 +113,38 @@ class TaskService
      * @return array
      * @Flow\CompileStatic
      */
-    protected static function getBatchTask(ObjectManagerInterface $objectManager)
+    protected static function getBatchTasks(ObjectManagerInterface $objectManager)
     {
         return self::_getTask($objectManager, BatchTaskInterface::class);
+    }
+
+    /**
+     * @param string $identifier
+     * @return string
+     */
+    public function getLabel($identifier)
+    {
+        return Arrays::getValueByPath($this->types, [$identifier, 'label']);
+    }
+
+    /**
+     * @param string $identifier
+     * @return string
+     */
+    public function getActions($identifier)
+    {
+        return Arrays::getValueByPath($this->types, [$identifier, 'actions']);
+    }
+
+    /**
+     * @param string $identifier
+     * @param string $actionIdentifier
+     * @return string
+     */
+    public function getActionOptions($identifier, $actionIdentifier)
+    {
+        $actions = $this->getActions($identifier);
+        return Arrays::getValueByPath($actions, [$actionIdentifier, 'options']);
     }
 
     /**

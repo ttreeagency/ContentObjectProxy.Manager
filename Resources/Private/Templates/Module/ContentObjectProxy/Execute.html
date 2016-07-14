@@ -6,10 +6,10 @@
 
         <f:if condition="{currentEntity}">
             <f:then>
-                <h2>Content Object Proxy Dashboard / <em>{currentEntity}</em></h2>
+                <h2>Resume / <em>{currentEntity}</em></h2>
             </f:then>
             <f:else>
-                <h2>Content Object Proxy Dashboard</h2>
+                <h2>Resume</h2>
             </f:else>
         </f:if>
     </div>
@@ -17,7 +17,7 @@
 
 <f:section name="content">
     <div class="neos-content neos-container-fluid">
-        <f:render partial="TaskReport" arguments="{processedEntities: processedEntities, actions: actions}"/>
+        <f:render partial="TaskReport" arguments="{processedEntities: processedEntities, actions: actions, currentEntity: currentEntity}"/>
         <div class="neos-footer">
             <f:link.action action="index"
                            class="neos-button"

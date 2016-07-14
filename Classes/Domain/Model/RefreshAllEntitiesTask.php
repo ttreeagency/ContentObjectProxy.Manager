@@ -77,7 +77,7 @@ class RefreshAllEntitiesTask implements BatchTaskInterface
     public function execute($currentEntity, Context $context, ContentObjectProxyController $controller)
     {
         $processedEntities = [];
-        $this->contentProxyProxyableEntityService->synchronizeAll($currentEntity, $context, function (NodeInterface $node, $entity, $updated) use (&$processedEntities) {
+        $this->contentProxyProxyableEntityService->synchronizeAllByClassName($currentEntity, $context, function (NodeInterface $node, $entity, $updated) use (&$processedEntities) {
             $identifier = $this->persistenceManager->getIdentifierByObject($entity);
             if (!isset($processedEntities[$identifier])) {
                 $processedEntities[$identifier] = [

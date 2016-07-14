@@ -3,7 +3,7 @@ privilegeTargets:
   'TYPO3\Flow\Security\Authorization\Privilege\Method\MethodPrivilege':
 
     'Ttree.ContentObjectProxy.Manager:Backend.Module.ContentObjectProxyManager':
-      matcher: 'method(Ttree\ContentObjectProxy\Manager\Controller\Module\ContentObjectProxyController->(index|execute|wizard)Action())'
+      matcher: 'method(Ttree\ContentObjectProxy\Manager\Controller\Module\ContentObjectProxyController->(index|execute|wizard|run)Action())'
 
 roles:
 

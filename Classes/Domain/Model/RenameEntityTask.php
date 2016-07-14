@@ -13,6 +13,10 @@ namespace Ttree\ContentObjectProxy\Manager\Domain\Model;
 
 use Ttree\ContentObjectProxy\Manager\Controller\Module\ContentObjectProxyController;
 use TYPO3\Flow\Annotations as Flow;
+use TYPO3\Flow\Error\Message;
+use TYPO3\Flow\Persistence\PersistenceManagerInterface;
+use TYPO3\Flow\Reflection\ObjectAccess;
+use TYPO3\TYPO3CR\Domain\Service\ContentObjectProxyService;
 use TYPO3\TYPO3CR\Domain\Service\Context;
 
 /**
@@ -20,6 +24,18 @@ use TYPO3\TYPO3CR\Domain\Service\Context;
  */
 class RenameEntityTask implements EntityBasedTaskInterface
 {
+    /**
+     * @var ContentObjectProxyService
+     * @Flow\Inject
+     */
+    protected $contentObjectProxyService;
+
+    /**
+     * @var PersistenceManagerInterface
+     * @Flow\Inject
+     */
+    protected $persistenceManager;
+
     /**
      * @return string
      */
@@ -54,12 +70,28 @@ class RenameEntityTask implements EntityBasedTaskInterface
 
     /**
      * @param object $currentEntity
+     * @param array $data
      * @param Context $context
      * @param ContentObjectProxyController $controller
+     * @param \Closure $callback
      * @return array
      */
-    public function execute($currentEntity, Context $context, ContentObjectProxyController $controller)
+    public function execute($currentEntity, array $data, Context $context, ContentObjectProxyController $controller, \Closure $callback = null)
     {
-        return [];
+        $this->contentObjectProxyService->inWorkspace($context->getWorkspaceName(), function () use ($currentEntity, $data, $controller) {
+            $updated = false;
+            foreach ($data as $propertyName => $propertyValue) {
+                $currentValue = ObjectAccess::getProperty($currentEntity, $propertyName);
+                if ($currentValue !== $propertyValue) {
+                    $controller->addFlashMessage('Property "%s" update from "%s" to "%s"', '', Message::SEVERITY_NOTICE, [$propertyName, $currentValue, $propertyValue]);
+                    ObjectAccess::setProperty($currentEntity, $propertyName, $propertyValue);
+                    $updated = true;
+                }
+            }
+            if ($updated) {
+                $this->persistenceManager->update($currentEntity);
+                $this->persistenceManager->persistAll();
+            }
+        });
     }
 }

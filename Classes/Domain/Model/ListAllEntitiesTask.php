@@ -77,15 +77,12 @@ class ListAllEntitiesTask implements BatchTaskInterface
     public function execute($currentEntity, Context $context, ContentObjectProxyController $controller)
     {
         $processedEntities = [];
-        foreach ($this->contentProxyProxyableEntityService->findAll($currentEntity) as $entity) {
+        foreach ($this->contentProxyProxyableEntityService->findAllByClassName($currentEntity) as $entity) {
             $identifier = $this->persistenceManager->getIdentifierByObject($entity);
             $processedEntities[] = [
                 'entity' => $entity,
                 'label' => method_exists($entity, '__toString') ? (string)$entity : '[implement __toString method please]',
                 'identifier' => $identifier,
-                'actions' => [
-                    
-                ]
             ];
         }
 

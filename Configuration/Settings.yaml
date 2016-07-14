@@ -22,3 +22,8 @@ Ttree:
       types:
         'Ttree\ArchitectesCh\Domain\Model\Activity':
           label: 'Activity'
+          actions:
+            'Ttree\ContentObjectProxy\Manager\Domain\Model\RenameEntityTask':
+              options:
+                editableProperties: [ 'name', 'uriPathSegment' ]
+                uniqueProperty: 'name'
