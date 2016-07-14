@@ -11,13 +11,15 @@ namespace Ttree\ContentObjectProxy\Manager\Controller\Module;
  * source code.
  */
 
+use Ttree\ContentObjectProxy\Manager\Domain\Model\BatchTaskInterface;
+use Ttree\ContentObjectProxy\Manager\Domain\Model\EntityBasedTaskInterface;
+use Ttree\ContentObjectProxy\Manager\Service\TaskService;
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\Flow\Error\Message;
 use TYPO3\Neos\Controller\CreateContentContextTrait;
 use TYPO3\Neos\Controller\Module\AbstractModuleController;
 use TYPO3\Neos\Domain\Service\ContentContextFactory;
 use TYPO3\Neos\Service\UserService;
-use TYPO3\TYPO3CR\Domain\Model\NodeInterface;
 use TYPO3\TYPO3CR\Domain\Service\ContentProxyableEntityService;
 
 /**
@@ -32,6 +34,12 @@ class ContentObjectProxyController extends AbstractModuleController
      * @Flow\Inject
      */
     protected $contentProxyProxyableEntityService;
+
+    /**
+     * @var TaskService
+     * @Flow\Inject
+     */
+    protected $taskService;
 
     /**
      * @var ContentContextFactory
@@ -52,102 +60,54 @@ class ContentObjectProxyController extends AbstractModuleController
     public function indexAction($currentEntity = null)
     {
         $this->assignAvailableEntities($currentEntity);
+        $this->view->assign('tasks', $this->taskService->getAll());
     }
 
     /**
+     * Dashboard Action
      * @param string $currentEntity
+     * @param string $task
      */
-    public function syncAction($currentEntity)
+    public function executeAction($currentEntity, $task)
     {
         $this->assignAvailableEntities($currentEntity);
 
-        $processedEntities = [];
-        $context = $this->createContentContext('live');
-        $this->contentProxyProxyableEntityService->synchronizeAll($currentEntity, $context, function (NodeInterface $node, $entity, $updated) use (&$processedEntities) {
-            $identifier = $this->persistenceManager->getIdentifierByObject($entity);
-            if (!isset($processedEntities[$identifier])) {
-                $processedEntities[$identifier] = [
-                    'entity' => $entity,
-                    'label' => $node->getLabel(),
-                    'identifier' => $identifier,
-                    'updatedNodes' => [],
-                    'nodes' => [],
-                ];
-            }
-            $result = [
-                'path' => $node->getPath(),
-                'identifier' => $node->getIdentifier()
-            ];
-            if ($updated) {
-                $processedEntities[$identifier]['updatedNodes'][] = $result;
-            } else {
-                $processedEntities[$identifier]['nodes'][] = $result;
-            }
-        });
-
-        $updateNodesCounter = $processedNodesCounter = 0;
-
-        $processedEntities = array_map(function ($entity) use (&$updateNodesCounter, &$processedNodesCounter) {
-            $entity['updateNodesCounter'] = count($entity['updatedNodes']);
-            $updateNodesCounter += $entity['updateNodesCounter'];
-            $entity['processedNodesCounter'] = count($entity['nodes']);
-            $processedNodesCounter += $entity['processedNodesCounter'];
-            return $entity;
-        }, $processedEntities);
-
-        $processedEntities = array_values($processedEntities);
-
-        usort($processedEntities, function ($a, $b) {
-            return strcasecmp($a['label'], $b['label']);
-        });
-
-        $this->addFlashMessage('%d entities of type "%s" synchronized', '', Message::SEVERITY_OK, [
-            count($processedEntities),
-            $currentEntity
-        ]);
-        if ($updateNodesCounter > 0) {
-            $this->addFlashMessage('%d/%d nodes updated', '', Message::SEVERITY_NOTICE, [
-                $updateNodesCounter,
-                $processedNodesCounter
+        $taskObject = $this->taskService->getByIdentifier($task);
+        if ($taskObject instanceof BatchTaskInterface) {
+            $this->forward('executeBatchTask', null, null, [
+                'currentEntity' => $currentEntity,
+                'task' => $task
+            ]);
+        } elseif ($taskObject instanceof EntityBasedTaskInterface) {
+            $this->forward('executeEntityBasedTask', null, null, [
+                'currentEntity' => $currentEntity,
+                'task' => $task
             ]);
         }
-
-        $this->view->assignMultiple([
-            'updateNodesCounter' => $updateNodesCounter,
-            'processedNodesCounter' => $processedNodesCounter,
-            'currentEntity' => $currentEntity,
-            'processedEntities' => $processedEntities,
-        ]);
     }
 
     /**
      * @param string $currentEntity
+     * @param string $task
      */
-    public function mergeAction($currentEntity)
+    public function executeBatchTaskAction($currentEntity, $task)
     {
-        $this->addFlashMessage('Entity "%s" merged', '', Message::SEVERITY_OK, [$currentEntity]);
-
-        $this->redirect('index', null, null, ['currentEntity' => $currentEntity]);
+        $taskObject = $this->taskService->getByIdentifier($task);
+        $context = $this->createContentContext('live');
+        $this->view->assignMultiple($taskObject->execute($currentEntity, $context, $this));
+        $this->addFlashMessage('Task "%s" excuted with sucess', '', Message::SEVERITY_OK, [$taskObject->getLabel()]);
     }
 
     /**
      * @param string $currentEntity
+     * @param string $task
      */
-    public function removeAction($currentEntity)
+    public function executeEntityBasedTaskAction($currentEntity, $task)
     {
-        $this->addFlashMessage('Entity "%s" removed', '', Message::SEVERITY_OK, [$currentEntity]);
-
-        $this->redirect('index', null, null, ['currentEntity' => $currentEntity]);
-    }
-
-    /**
-     * @param string $currentEntity
-     */
-    public function renameAction($currentEntity)
-    {
-        $this->addFlashMessage('Entity "%s" renamed', '', Message::SEVERITY_OK, [$currentEntity]);
-
-        $this->redirect('index', null, null, ['currentEntity' => $currentEntity]);
+        $taskObject = $this->taskService->getByIdentifier($task);
+        $context = $this->createContentContext('live');
+        $this->view->assignMultiple($taskObject->execute($currentEntity, $context, $this));
+        $this->addFlashMessage('Task "%s" excuted with sucess', '', Message::SEVERITY_OK, [$taskObject->getLabel()]);
     }
 
     /**

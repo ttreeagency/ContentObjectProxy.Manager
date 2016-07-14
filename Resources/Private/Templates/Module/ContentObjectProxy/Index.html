@@ -18,33 +18,14 @@
 <f:section name="content">
     <f:render partial="EntitySelector" arguments="{entities: entities}"/>
     <f:if condition="{currentEntity}">
-        <f:link.action action="sync"
-                       class="neos-button neos-button-primary"
-                       title="Synchronize the content repository with the doctrine entity"
-                       arguments="{currentEntity: currentEntity}"
-                       addQueryString="TRUE">
-            <i class="icon-refresh"></i> Refresh all entities
-        </f:link.action>
-        <f:link.action action="merge"
-                       class="neos-button neos-button-warning"
-                       title="Merge an entity to an other one and update the content repository"
-                       arguments="{currentEntity: currentEntity}"
-                       addQueryString="TRUE">
-            <i class="icon-code-fork"></i> Merge one entity
-        </f:link.action>
-        <f:link.action action="rename"
-                       class="neos-button neos-button-warning"
-                       title="Rename an entity and the corresponding nodes"
-                       arguments="{currentEntity: currentEntity}"
-                       addQueryString="TRUE">
-            <i class="icon-edit"></i> Rename one entity
-        </f:link.action>
-        <f:link.action action="remove"
-                       class="neos-button neos-button-danger"
-                       title="Remove an entity and the corresponding nodes"
-                       arguments="{currentEntity: currentEntity}"
-                       addQueryString="TRUE">
-            <i class="icon-trash"></i> Remove one entity
-        </f:link.action>
+        <f:for each="{tasks}" as="task">
+            <f:link.action action="execute"
+                           class="{task.buttonClass}"
+                           title="{task.description}"
+                           arguments="{currentEntity: currentEntity, task: task.__className}"
+                           addQueryString="TRUE">
+                <i class="icon-refresh"></i> {task.label}
+            </f:link.action>
+        </f:for>
     </f:if>
 </f:section>
