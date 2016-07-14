@@ -11,8 +11,6 @@ namespace Ttree\ContentObjectProxy\Manager\Controller\Module;
  * source code.
  */
 
-use Ttree\ContentObjectProxy\Manager\Domain\Model\BatchTaskInterface;
-use Ttree\ContentObjectProxy\Manager\Domain\Model\EntityBasedTaskInterface;
 use Ttree\ContentObjectProxy\Manager\Domain\Service\ContentProxyableEntityService;
 use Ttree\ContentObjectProxy\Manager\Service\TaskService;
 use TYPO3\Flow\Annotations as Flow;
@@ -60,7 +58,7 @@ class ContentObjectProxyController extends AbstractModuleController
     public function indexAction($currentEntity = null)
     {
         $this->assignAvailableEntities($currentEntity);
-        $this->view->assign('tasks', $this->taskService->getAll());
+        $this->view->assign('tasks', $this->taskService->getAllBatchTasks());
     }
 
     /**
@@ -73,41 +71,25 @@ class ContentObjectProxyController extends AbstractModuleController
         $this->assignAvailableEntities($currentEntity);
 
         $taskObject = $this->taskService->getByIdentifier($task);
-        if ($taskObject instanceof BatchTaskInterface) {
-            $this->forward('executeBatchTask', null, null, [
-                'currentEntity' => $currentEntity,
-                'task' => $task
-            ]);
-        } elseif ($taskObject instanceof EntityBasedTaskInterface) {
-            $this->forward('executeEntityBasedTask', null, null, [
-                'currentEntity' => $currentEntity,
-                'task' => $task
-            ]);
-        }
-    }
+        $context = $this->createContentContext($this->userService->getPersonalWorkspaceName());
 
-    /**
-     * @param string $currentEntity
-     * @param string $task
-     */
-    public function executeBatchTaskAction($currentEntity, $task)
-    {
-        $taskObject = $this->taskService->getByIdentifier($task);
-        $context = $this->createContentContext('live');
-        $this->view->assignMultiple($taskObject->execute($currentEntity, $context, $this));
+        $result = $taskObject->execute($currentEntity, $context, $this);
+
+        $this->view->assignMultiple($result);
+
+        $this->view->assign('actions', $this->taskService->getAllEntityBasedTasks());
+
         $this->addFlashMessage('Task "%s" excuted with sucess', '', Message::SEVERITY_OK, [$taskObject->getLabel()]);
     }
 
     /**
      * @param string $currentEntity
-     * @param string $task
+     * @param string $identifier
+     * @param array $options
      */
-    public function executeEntityBasedTaskAction($currentEntity, $task)
+    public function wizardAction($currentEntity, $identifier, array $options = [])
     {
-        $taskObject = $this->taskService->getByIdentifier($task);
-        $context = $this->createContentContext('live');
-        $this->view->assignMultiple($taskObject->execute($currentEntity, $context, $this));
-        $this->addFlashMessage('Task "%s" excuted with sucess', '', Message::SEVERITY_OK, [$taskObject->getLabel()]);
+
     }
 
     /**
@@ -124,6 +106,10 @@ class ContentObjectProxyController extends AbstractModuleController
                 'current' => $className === $currentEntity
             ];
         }, $entities);
+
+        usort($availableEntities, function ($a, $b) {
+            return strcmp($a['label'], $b['label']);
+        });
 
         $this->view->assignMultiple([
             'entities' => $availableEntities,

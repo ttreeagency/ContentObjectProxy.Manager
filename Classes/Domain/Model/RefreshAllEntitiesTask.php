@@ -57,7 +57,7 @@ class RefreshAllEntitiesTask implements BatchTaskInterface
      */
     public function getButtonClass()
     {
-        return 'neos-button neos-button-primary';
+        return 'neos-button neos-button-warning';
     }
 
     /**
@@ -90,6 +90,7 @@ class RefreshAllEntitiesTask implements BatchTaskInterface
             }
             $result = [
                 'path' => $node->getPath(),
+                'type' => $node->getNodeType()->getName(),
                 'identifier' => $node->getIdentifier()
             ];
             if ($updated) {

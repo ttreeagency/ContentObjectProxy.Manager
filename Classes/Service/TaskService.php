@@ -19,14 +19,13 @@ use TYPO3\Flow\Exception;
 use TYPO3\Flow\Object\ObjectManagerInterface;
 use TYPO3\Flow\Reflection\ObjectAccess;
 use TYPO3\Flow\Reflection\ReflectionService;
-use TYPO3\Neos\Controller\Module\AbstractModuleController;
 
 /**
  * TaskService
  *
  * @Flow\Scope("singleton")
  */
-class TaskService extends AbstractModuleController
+class TaskService
 {
     /**
      * @Flow\Inject
@@ -35,13 +34,23 @@ class TaskService extends AbstractModuleController
     protected $objectManager;
 
     /**
-     * Return all proxyable entities configuration
+     * Return all batch task
      *
      * @return array
      */
-    public function getAll()
+    public function getAllBatchTasks()
     {
-        return self::tasks($this->objectManager);
+        return self::getBatchTask($this->objectManager);
+    }
+
+    /**
+     * Return all entity based task
+     *
+     * @return array
+     */
+    public function getAllEntityBasedTasks()
+    {
+        return self::getEntityBasedTasks($this->objectManager);
     }
 
     /**
@@ -51,7 +60,7 @@ class TaskService extends AbstractModuleController
      */
     public function getByIdentifier($identifier)
     {
-        $tasks = self::tasks($this->objectManager);
+        $tasks = self::getBatchTask($this->objectManager);
         $tasks = array_filter($tasks, function ($task) use ($identifier) {
             return $task['__className'] === $identifier;
         });
@@ -68,16 +77,44 @@ class TaskService extends AbstractModuleController
      * @return array
      * @Flow\CompileStatic
      */
-    protected static function tasks($objectManager)
+    protected static function getEntityBasedTasks(ObjectManagerInterface $objectManager)
+    {
+        return self::_getTask($objectManager, EntityBasedTaskInterface::class);
+    }
+
+    /**
+     * Get all tasks
+     *
+     * @param ObjectManagerInterface $objectManager
+     * @return array
+     * @Flow\CompileStatic
+     */
+    protected static function getBatchTask(ObjectManagerInterface $objectManager)
+    {
+        return self::_getTask($objectManager, BatchTaskInterface::class);
+    }
+
+    /**
+     * @param ObjectManagerInterface $objectManager
+     * @param string $interface
+     * @return array
+     */
+    protected static function _getTask($objectManager, $interface)
     {
         $reflectionService = $objectManager->get(ReflectionService::class);
-        $nodeImplementations = $reflectionService->getAllImplementationClassNamesForInterface(TaskInterface::class);
-        return array_map(function ($entity) use ($reflectionService, $objectManager) {
+        $nodeImplementations = $reflectionService->getAllImplementationClassNamesForInterface($interface);
+        $result = array_map(function ($entity) use ($reflectionService, $objectManager) {
             /** @var TaskInterface $task */
             $task = $objectManager->get($entity);
             $properties = ObjectAccess::getGettableProperties($task);
             $properties['__className'] = $entity;
             return $properties;
         }, $nodeImplementations);
+
+        usort($result, function ($a, $b) {
+            return strcasecmp($a['label'], $b['label']);
+        });
+
+        return $result;
     }
 }

@@ -25,7 +25,7 @@ class RenameEntityTask implements EntityBasedTaskInterface
      */
     public function getLabel()
     {
-        return 'Rename entity';
+        return 'Rename';
     }
 
     /**

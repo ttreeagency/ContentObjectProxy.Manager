@@ -1,0 +1,76 @@
+{namespace neos=TYPO3\Neos\ViewHelpers}
+<div class="neos-row-fluid">
+    <table class="neos-table">
+        <thead>
+        <tr>
+            <th width="45%">Entity</th>
+            <th>Identifier</th>
+            <f:if condition="{entity.processedNodesCounter}">
+                <th>Updated / Processed</th>
+            </f:if>
+            <th>&nbsp;</th>
+        </tr>
+        </thead>
+        <tbody>
+        <f:for each="{processedEntities}" as="entity">
+            <tr>
+                <td><b>{entity.label}</b></td>
+                <td>{entity.identifier}</td>
+                <td>
+                    <f:if condition="{entity.processedNodesCounter}">
+                        <f:if condition="{entity.updateNodesCounter}">
+                            <f:then>
+                                {entity.updateNodesCounter}/{entity.processedNodesCounter}
+                            </f:then>
+                            <f:else>
+                                <i class="icon-check-circle"></i> {entity.processedNodesCounter} node, but no update
+                                required
+                            </f:else>
+                        </f:if>
+                    </f:if>
+                </td>
+                <td class="neos-action">
+                    <div class="neos-pull-right">
+                        <f:for each="{actions}" as="action">
+                            <f:form action="wizard" style="display: inline-block;">
+                                <f:form.hidden name="currentEntity" value="{currentEntity}" />
+                                <f:form.hidden name="identifier" value="{entity.identifier}" />
+                                <f:form.hidden name="task" value="{action.__className}" />
+                                <f:form.button class="{action.buttonClass}"
+                                               title="{action.description}"
+                                               data="{neos-toggle: 'tooltip', original-title: action.description}">
+                                    <i class="{action.iconClass}"></i>
+                                </f:form.button>
+                            </f:form>
+                        </f:for>
+                    </div>
+                </td>
+            </tr>
+            <f:if condition="{entity.updatedNodes -> f:count()}">
+                <tr>
+                    <td colspan="3">
+                        <table class="neos-table-condensed" style="width: 100%;">
+                            <thead>
+                            <tr>
+                                <th width="25%">Updated nodes</th>
+                                <th>Type</th>
+                                <th>&nbsp;</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <f:for each="{entity.updatedNodes}" as="node">
+                                <tr>
+                                    <td>{node.identifier}</td>
+                                    <td>{node.type}</td>
+                                    <td>{node.path}</td>
+                                </tr>
+                            </f:for>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </f:if>
+        </f:for>
+        </tbody>
+    </table>
+</div>

@@ -25,7 +25,7 @@ class RemoveEntityTask implements EntityBasedTaskInterface
      */
     public function getLabel()
     {
-        return 'Remove entity';
+        return 'Remove';
     }
 
     /**

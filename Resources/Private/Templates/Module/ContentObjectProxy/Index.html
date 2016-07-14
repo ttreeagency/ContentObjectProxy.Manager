@@ -19,13 +19,15 @@
     <f:if condition="{currentEntity}">
         <f:then>
             <f:for each="{tasks}" as="task">
-                <f:link.action action="execute"
-                               class="{task.buttonClass}"
-                               title="{task.description}"
-                               arguments="{currentEntity: currentEntity, task: task.__className}"
-                               addQueryString="TRUE">
-                    <i class="icon-refresh"></i> {task.label}
-                </f:link.action>
+                <f:form action="execute" style="display: inline-block;">
+                    <f:form.hidden name="currentEntity" value="{currentEntity}" />
+                    <f:form.hidden name="task" value="{task.__className}" />
+                    <f:form.button
+                            class="{task.buttonClass}"
+                            title="{task.description}">
+                        <i class="{task.iconClass}"></i> {task.label}
+                    </f:form.button>
+                </f:form>
             </f:for>
         </f:then>
         <f:else>
