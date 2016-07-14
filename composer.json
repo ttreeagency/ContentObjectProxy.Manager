@@ -1,0 +1,18 @@
+{
+    "name": "ttree/contentobjectproxy-manager",
+    "type": "neos-package",
+    "description": "Backend module with helpers to manage content object proxy in the Neos Content Repository",
+    "require": {
+        "typo3/flow": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ttree\\ContentObjectProxy\\Manager\\": "Classes/"
+        }
+    },
+    "extra": {
+        "neos": {
+            "package-key": "Ttree.ContentObjectProxy.Manager"
+        }
+    }
+}

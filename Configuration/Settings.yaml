@@ -1,0 +1,21 @@
+TYPO3:
+  Neos:
+    modules:
+      management:
+        submodules:
+          contentobjectproxy:
+            label: 'Content Object Proxy Manager'
+            controller: 'Ttree\ContentObjectProxy\Manager\Controller\Module\ContentObjectProxyController'
+            description: 'This module contains the content objet proxy manager.'
+            icon: 'icon-plug'
+            privilegeTarget: 'Ttree.ContentObjectProxy.Manager:Backend.Module.ContentObjectProxyManager'
+
+Ttree:
+  ContentObjectProxy:
+    Manager:
+      bodyClasses: 'contentobjectproxy-manager'
+      scripts:
+        - resource://TYPO3.Twitter.Bootstrap/Public/Libraries/jQuery/jquery-1.10.1.min.js
+        - resource://TYPO3.Twitter.Bootstrap/Public/2/js/bootstrap.min.js
+      styles:
+        - resource://TYPO3.Twitter.Bootstrap/Public/2/css/bootstrap.min.css

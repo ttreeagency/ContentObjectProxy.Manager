@@ -1,0 +1,5 @@
+-
+  requestFilter: 'mainRequest.isPackage("TYPO3.Neos") && isPackage("Ttree.ContentObjectProxy.Manager") && isController("Module\ContentObjectProxy")'
+  options:
+    'layoutRootPaths': ['resource://TYPO3.Neos/Private/Layouts']
+    'partialRootPaths': ['resource://Ttree.ContentObjectProxy.Manager/Private/Partials', 'resource://TYPO3.Neos/Private/Partials']

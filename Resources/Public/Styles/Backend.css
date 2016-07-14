@@ -1,0 +1,85 @@
+.neos.neos-module-management-contentobjectproxy {
+
+}
+
+.neos.neos-module-management-contentobjectproxy .neos-options {
+    margin-bottom: 32px;
+    border-bottom: 1px solid #3f3f3f;
+    *zoom: 1;
+}
+.neos.neos-module-management-contentobjectproxy .neos-options:before, .neos.neos-module-management-contentobjectproxy .neos-options:after {
+    display: table;
+    content: "";
+    line-height: 0;
+}
+.neos.neos-module-management-contentobjectproxy .neos-options:after {
+    clear: both;
+}
+.neos.neos-module-management-contentobjectproxy .neos-options a {
+    display: block;
+    height: 40px;
+    line-height: 40px;
+    min-width: 24px;
+    text-align: center;
+    padding: 0 8px;
+    color: #00b5ff;
+}
+.neos.neos-module-management-contentobjectproxy .neos-options a:hover {
+    color: #fff;
+    text-decoration: none;
+}
+.neos.neos-module-management-contentobjectproxy .neos-options .neos-file-options {
+    float: left;
+}
+.neos.neos-module-management-contentobjectproxy .neos-options .neos-file-options .count {
+    display: inline-block;
+    height: 40px;
+    line-height: 40px;
+    padding: 0 8px 0 0;
+    border-right: 1px solid #3f3f3f;
+}
+.neos.neos-module-management-contentobjectproxy .neos-options .neos-file-options a {
+    display: inline-block;
+}
+.neos.neos-module-management-contentobjectproxy .neos-options .neos-file-options i {
+    margin-right: 4px;
+    vertical-align: middle;
+}
+.neos.neos-module-management-contentobjectproxy .neos-options .neos-view-options {
+    float: right;
+    white-space: nowrap;
+    font-size: 0;
+}
+.neos.neos-module-management-contentobjectproxy .neos-options .neos-view-options > a,
+.neos.neos-module-management-contentobjectproxy .neos-options .neos-view-options > .neos-dropdown {
+    display: inline-block;
+    border-right: 1px solid #3f3f3f;
+}
+.neos.neos-module-management-contentobjectproxy .neos-options .neos-view-options > a:first-child,
+.neos.neos-module-management-contentobjectproxy .neos-options .neos-view-options > .neos-dropdown:first-child {
+    border-left: 1px solid #3f3f3f;
+}
+.neos.neos-module-management-contentobjectproxy .neos-options .neos-view-options a {
+    color: #fff;
+    font-size: 14px;
+}
+.neos.neos-module-management-contentobjectproxy .neos-options .neos-view-options a.neos-active {
+    color: #00b5ff;
+}
+.neos.neos-module-management-contentobjectproxy .neos-options .neos-view-options a:hover {
+    background: #00b5ff;
+    color: #fff;
+}
+.neos.neos-module-management-contentobjectproxy .neos-options .neos-view-options a i {
+    line-height: 40px;
+    vertical-align: top;
+}
+.neos.neos-module-management-contentobjectproxy .neos-options .neos-view-options ul li a {
+    min-width: 24px;
+    line-height: 40px;
+    text-align: left;
+    padding: 0 16px;
+}
+.neos.neos-module-management-contentobjectproxy .neos-options .neos-view-options ul li a.neos-active {
+    color: #fff;
+}

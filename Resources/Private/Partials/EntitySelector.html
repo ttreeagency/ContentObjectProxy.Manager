@@ -1,0 +1,15 @@
+{namespace neos=TYPO3\Neos\ViewHelpers}
+<div class="neos-dropdown pull-right" id="neos-filter-menu">
+        <span title="Filter options" data-neos-toggle="tooltip">
+            <a class="dropdown-toggle" href="#" data-neos-toggle="dropdown" data-target="#neos-filter-menu">
+                <i class="icon-database"></i>
+            </a>
+        </span>
+    <ul class="neos-dropdown-menu neos-pull-right" role="menu">
+        <f:for each="{entities}" as="entity">
+            <li>
+                <f:link.action action="index" title="Select the current entity" arguments="{currentEntity: entity.name}" addQueryString="TRUE" class="{f:if(condition: '{entity.current}', then: 'neos-active')}"><i class="icon-table"></i> {entity.name}</f:link.action>
+            </li>
+        </f:for>
+    </ul>
+</div>
