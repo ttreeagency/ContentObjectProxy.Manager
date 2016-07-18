@@ -25,5 +25,5 @@ Ttree:
           actions:
             'Ttree\ContentObjectProxy\Manager\Domain\Model\RenameEntityTask':
               options:
-                editableProperties: [ 'name', 'uriPathSegment' ]
+                editableProperties: [ 'name' ]
                 uniqueProperty: 'name'
