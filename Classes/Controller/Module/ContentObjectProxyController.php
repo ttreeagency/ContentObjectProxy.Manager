@@ -123,6 +123,8 @@ class ContentObjectProxyController extends AbstractModuleController
         $options = $this->taskService->getActionOptions($currentEntity, $currentAction);
         $taskObject = $this->taskService->getEntityBasedTaskByIdentifier($currentAction);
 
+        $data = array_map('trim', $data);
+
         $valideRequest = true;
         if (isset($options['uniqueProperty'])) {
             $query = $this->persistenceManager->createQueryForType($currentEntity);
