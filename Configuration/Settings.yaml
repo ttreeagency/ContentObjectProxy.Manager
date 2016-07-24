@@ -24,6 +24,8 @@ Ttree:
           label: 'Activity'
           actions:
             'Ttree\ContentObjectProxy\Manager\Domain\Model\RenameEntityTask':
+              label: 'Rename entity'
+              wizard: 'Rename'
               options:
                 editableProperties: [ 'name' ]
                 uniqueProperty: 'name'

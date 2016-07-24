@@ -1,0 +1,36 @@
+{namespace neos=TYPO3\Neos\ViewHelpers}
+<div class="neos-module-container">
+    <fieldset>
+        <legend>Rename node properties</legend>
+        <div class="neos-row-fluid neos-module-container">
+            <f:form.hidden name="currentAction"
+                           value="{currentAction}"/>
+            <f:form.hidden name="currentEntity"
+                           value="{currentEntity}"/>
+            <f:form.hidden name="identifier"
+                           value="{identifier}"/>
+
+            <f:for each="{editableProperties}" as="property">
+                <div class="neos-control-group">
+                    <label class="neos-control-label"
+                           for="{property.name}">{property.label}</label>
+                    <div class="neos-controls neos-controls-row">
+                        <f:form.textfield class="neos-span12" id="{property.name}"
+                                          name="data[{property.name}]" value="{property.value}"/>
+                    </div>
+                </div>
+            </f:for>
+        </div>
+    </fieldset>
+</div>
+<div class="neos-footer">
+    <f:link.action action="index"
+                   class="neos-button"
+                   addQueryString="TRUE">
+        Cancel
+    </f:link.action>
+    <f:form.button type="submit"
+                   class="neos-button neos-button-primary">
+        Save
+    </f:form.button>
+</div>

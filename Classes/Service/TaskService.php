@@ -148,6 +148,28 @@ class TaskService
     }
 
     /**
+     * @param string $identifier
+     * @param string $actionIdentifier
+     * @return string
+     */
+    public function getActionLabel($identifier, $actionIdentifier)
+    {
+        $actions = $this->getActions($identifier);
+        return (string)Arrays::getValueByPath($actions, [$actionIdentifier, 'label']);
+    }
+
+    /**
+     * @param string $identifier
+     * @param string $actionIdentifier
+     * @return string
+     */
+    public function getActionWizard($identifier, $actionIdentifier)
+    {
+        $actions = $this->getActions($identifier);
+        return (string)Arrays::getValueByPath($actions, [$actionIdentifier, 'wizard']);
+    }
+
+    /**
      * @param ObjectManagerInterface $objectManager
      * @param string $interface
      * @return array
