@@ -1,0 +1,36 @@
+{namespace neos=TYPO3\Neos\ViewHelpers}
+<div class="neos-row-fluid">
+    <h3>Actions</h3>
+    <p>If this plan as no blocker, the following actions will be executed.</p>
+    <table class="neos-table">
+        <thead>
+        <tr>
+            <th>Target</th>
+            <th>Message</th>
+            <th>Node</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <f:for each="{actions}" as="action">
+            <tr>
+                <td>{action.node.label}</td>
+                <td>{action.message}</td>
+                <td>{action.node.identifier}</td>
+                <td class="neos-action">
+                    <div class="neos-pull-right">
+                        <neos:link.node
+                                node="{action.node}"
+                                resolveShortcuts="FALSE"
+                                target="profile"
+                                rel="noopener"
+                                class="neos-button">
+                            <i class="icon-link"></i>
+                        </neos:link.node>
+                    </div>
+                </td>
+            </tr>
+        </f:for>
+        </tbody>
+    </table>
+</div>

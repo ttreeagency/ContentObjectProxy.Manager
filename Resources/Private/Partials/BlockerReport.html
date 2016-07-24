@@ -1,0 +1,39 @@
+{namespace neos=TYPO3\Neos\ViewHelpers}
+<div class="neos-row-fluid">
+    <h3>Blockers</h3>
+    <p>Unable to apply the action stack, check the {blockers -> f:count()} blockers bellow, solve them and restart this action</p>
+    <table class="neos-table">
+        <thead>
+        <tr>
+            <th>Label</th>
+            <th>Identifier</th>
+            <th>NodeType</th>
+            <th>Message</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <f:for each="{blockers}" as="blocker">
+            <tr>
+                <td><b>{blocker.node.label}</b></td>
+                <td>{blocker.node.identifier}</td>
+                <td>{blocker.node.nodeType.name}</td>
+                <td>{blocker.node.workspace.name}</td>
+                <td>{blocker.message}</td>
+                <td class="neos-action">
+                    <div class="neos-pull-right">
+                        <neos:link.node
+                                node="{blocker.node}"
+                                resolveShortcuts="FALSE"
+                                target="profile"
+                                rel="noopener"
+                                class="neos-button">
+                            <i class="icon-link"></i>
+                        </neos:link.node>
+                    </div>
+                </td>
+            </tr>
+        </f:for>
+        </tbody>
+    </table>
+</div>

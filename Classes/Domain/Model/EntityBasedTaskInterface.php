@@ -26,7 +26,7 @@ interface EntityBasedTaskInterface extends TaskInterface
      * @param Context $context
      * @param ContentObjectProxyController $controller
      * @param \Closure $callback
-     * @return array
+     * @return ActionStack
      */
     public function execute($currentEntity, array $data, Context $context, ContentObjectProxyController $controller, \Closure $callback = null);
 }

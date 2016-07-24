@@ -11,6 +11,7 @@ namespace Ttree\ContentObjectProxy\Manager\Controller\Module;
  * source code.
  */
 
+use Ttree\ContentObjectProxy\Manager\Domain\Model\ActionStack;
 use Ttree\ContentObjectProxy\Manager\Domain\Service\ContentProxyableEntityService;
 use Ttree\ContentObjectProxy\Manager\InvalidArgumentException;
 use Ttree\ContentObjectProxy\Manager\Service\TaskService;
@@ -149,9 +150,14 @@ class ContentObjectProxyController extends AbstractModuleController
         if ($validRequest) {
             try {
                 $entity = $this->persistenceManager->getObjectByIdentifier($identifier, $currentEntity);
-                $processedEntity['nodes'] = $taskObject->execute($entity, $data, $this->createContentContext($this->userService->getPersonalWorkspaceName()), $this);
+                $result = $taskObject->execute($entity, $data, $this->createContentContext($this->userService->getPersonalWorkspaceName()), $this);
+                $processedEntity['nodes'] = $result;
                 $this->addFlashMessage('Task "%s" executed with sucess', '', Message::SEVERITY_OK, [$taskObject->getLabel()]);
-                $this->forward('index', null, null, ['currentEntity' => $currentEntity]);
+                if (!$result instanceof ActionStack) {
+                    $this->forward('index', null, null, ['currentEntity' => $currentEntity]);
+                } else {
+                    $this->view->assign('actionStack', $result);
+                }
             } catch (InvalidArgumentException $exception) {
                 $this->addFlashMessage('Task "%s" failed with message: ' . $exception->getMessage(), '', Message::SEVERITY_ERROR, [$taskObject->getLabel()]);
                 $this->forward('wizard', null, null, [
