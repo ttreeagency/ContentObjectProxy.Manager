@@ -1,5 +1,9 @@
 # Content Object Proxy Manager
 
+**Warning**: This package is NOT generic, it's developped for one of our big project, using this package outside of the 
+project will not work. But many feature can be use in a generic way and if we need this package for an other project, we 
+will refactor it. We decide to opensource the package, because you can learn some stuff by reading the code. Enjoy.
+
 This package contains a backend module for Neos CMS to manager content object proxy (doctrine entities proxied in the
 content repository).
 
