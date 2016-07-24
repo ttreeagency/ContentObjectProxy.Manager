@@ -89,8 +89,9 @@ class ContentObjectProxyController extends AbstractModuleController
      * @param string $currentEntity
      * @param string $currentAction
      * @param string $identifier
+     * @param string $currentLabel
      */
-    public function wizardAction($currentEntity, $currentAction, $identifier)
+    public function wizardAction($currentEntity, $currentAction, $identifier, $currentLabel)
     {
         $entity = $this->persistenceManager->getObjectByIdentifier($identifier, $currentEntity);
 
@@ -117,6 +118,7 @@ class ContentObjectProxyController extends AbstractModuleController
             'entity' => $entity,
             'wizard' => $wizard,
             'label' => $label,
+            'currentLabel' => $currentLabel,
         ]);
     }
 
@@ -124,9 +126,10 @@ class ContentObjectProxyController extends AbstractModuleController
      * @param string $currentEntity
      * @param string $currentAction
      * @param string $identifier
+     * @param string $currentLabel
      * @param array $data
      */
-    public function runAction($currentEntity, $currentAction, $identifier, array $data = [])
+    public function runAction($currentEntity, $currentAction, $identifier, $currentLabel, array $data = [])
     {
         $options = $this->taskService->getActionOptions($currentEntity, $currentAction);
         $taskObject = $this->taskService->getEntityBasedTaskByIdentifier($currentAction);
@@ -156,13 +159,21 @@ class ContentObjectProxyController extends AbstractModuleController
                 if (!$result instanceof ActionStack) {
                     $this->forward('index', null, null, ['currentEntity' => $currentEntity]);
                 } else {
-                    $this->view->assign('actionStack', $result);
+                    $this->view->assignMultiple([
+                        'actionStack' => $result,
+                        'currentEntity' => $currentEntity,
+                        'currentAction' => $currentAction,
+                        'currentActionLabel' => $taskObject->getLabel(),
+                        'currentLabel' => $currentLabel,
+                        'identifier' => $identifier
+                    ]);
                 }
             } catch (InvalidArgumentException $exception) {
                 $this->addFlashMessage('Task "%s" failed with message: ' . $exception->getMessage(), '', Message::SEVERITY_ERROR, [$taskObject->getLabel()]);
                 $this->forward('wizard', null, null, [
                     'currentEntity' => $currentEntity,
                     'currentAction' => $currentAction,
+                    'currentLabel' => $currentLabel,
                     'identifier' => $identifier
                 ]);
             }

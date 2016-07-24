@@ -1,15 +1,8 @@
 {namespace neos=TYPO3\Neos\ViewHelpers}
 <div class="neos-module-container">
     <fieldset>
-        <legend>{label}</legend>
+        <legend>{label} "{currentLabel}"</legend>
         <div class="neos-row-fluid neos-module-container">
-            <f:form.hidden name="currentAction"
-                           value="{currentAction}"/>
-            <f:form.hidden name="currentEntity"
-                           value="{currentEntity}"/>
-            <f:form.hidden name="identifier"
-                           value="{identifier}"/>
-
             <div class="neos-controls">
                 <label class="neos-checkbox"
                        for="confirm">

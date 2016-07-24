@@ -3,35 +3,33 @@
 
 <f:section name="subtitle">
     <div class="neos-module-container">
-        <f:if condition="{currentEntity}">
-            <f:then>
-                <h2>Wizard / <em>{currentEntity}</em></h2>
-            </f:then>
-            <f:else>
-                <h2>Wizard</h2>
-            </f:else>
-        </f:if>
+        <h2>{currentActionLabel} "{currentLabel}"</h2>
     </div>
 </f:section>
 
 <f:section name="content">
     <f:form action="apply">
+        <f:form.hidden name="currentAction"
+                       value="{currentAction}"/>
+        <f:form.hidden name="currentEntity"
+                       value="{currentEntity}"/>
+        <f:form.hidden name="identifier"
+                       value="{identifier}"/>
+
         <div class="neos-content neos-container-fluid">
             <div class="neos-module-container">
+                <f:if condition="{actionStack.hasBlockers}">
+                    <fieldset>
+                        <legend>Blockers</legend>
+                        <div class="neos-row-fluid neos-module-container">
+                            <f:render partial="BlockerReport" arguments="{blockers: actionStack.blockers}"/>
+                        </div>
+                    </fieldset>
+                </f:if>
                 <fieldset>
-                    <legend>{label}</legend>
+                    <legend>Action Stack</legend>
                     <div class="neos-row-fluid neos-module-container">
-                        <f:form.hidden name="currentAction"
-                                       value="{currentAction}"/>
-                        <f:form.hidden name="currentEntity"
-                                       value="{currentEntity}"/>
-                        <f:form.hidden name="identifier"
-                                       value="{identifier}"/>
-
-                        <f:if condition="{actionStack.hasBlockers}">
-                            <f:render partial="BlockerReport" arguments="{blockers: actionStack.blockers}" />
-                        </f:if>
-                        <f:render partial="ActionStackReport" arguments="{actions: actionStack.actions}" />
+                        <f:render partial="ActionStackReport" arguments="{actions: actionStack.actions}"/>
                     </div>
                 </fieldset>
             </div>

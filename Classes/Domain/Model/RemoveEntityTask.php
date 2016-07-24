@@ -165,8 +165,8 @@ class RemoveEntityTask implements EntityBasedTaskInterface
         if ($targetExistQuery->get(0) === null) {
             $targetParentNode = null;
             $actionStack->stackAction([
-                'action' => 'createActivityNode',
-                'message' => vsprintf('Parent node "%s" (%s) need to be create bellow "%s" (%s)', [
+                'action' => 'createActivityNodeAndMove',
+                'message' => vsprintf('Node "%s" (%s) need to be create bellow "%s" (%s)', [
                     $targetMainActivity->getLabel(),
                     $targetMainActivity->getProperty('uriPathSegment'),
                     $parentNode->getParent()->getLabel(),
@@ -191,6 +191,7 @@ class RemoveEntityTask implements EntityBasedTaskInterface
             'target' => $targetMainActivity,
             'parentNode' => $targetParentNode
         ]);
+        // todo check if it's egal to the current activity !!!!
         $actionStack->stackAction([
             'action' => 'removeReference',
             'message' => vsprintf('Activity reference "%s" can be unset', [
@@ -201,14 +202,4 @@ class RemoveEntityTask implements EntityBasedTaskInterface
             'propertyValue' => $currentMainActivity
         ]);
     }
-
-    /**
-     * @param NodeInterface $node
-     * @return string
-     */
-    protected function getNodeLabel(NodeInterface $node)
-    {
-        return $node->getLabel() . ' ' . $node->getPath() . ' ' . $node->getNodeType()->getName();
-    }
-
 }
