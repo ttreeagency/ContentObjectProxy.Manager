@@ -12,6 +12,7 @@ namespace Ttree\ContentObjectProxy\Manager\Controller\Module;
  */
 
 use Ttree\ContentObjectProxy\Manager\Domain\Service\ContentProxyableEntityService;
+use Ttree\ContentObjectProxy\Manager\InvalidArgumentException;
 use Ttree\ContentObjectProxy\Manager\Service\TaskService;
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\Flow\Error\Message;
@@ -92,23 +93,29 @@ class ContentObjectProxyController extends AbstractModuleController
     {
         $entity = $this->persistenceManager->getObjectByIdentifier($identifier, $currentEntity);
 
+        $label = $this->taskService->getActionLabel($currentEntity, $currentAction);
+        $wizard = $this->taskService->getActionWizard($currentEntity, $currentAction);
         $options = $this->taskService->getActionOptions($currentEntity, $currentAction);
 
-        $editableProperties = array_map(function ($propertyName) use ($entity) {
-            return [
-                'label' => ucfirst($propertyName),
-                'name' => $propertyName,
-                'value' => ObjectAccess::getProperty($entity, $propertyName)
-            ];
-        }, $options['editableProperties']);
+        if (isset($options['editableProperties'])) {
+            $editableProperties = array_map(function ($propertyName) use ($entity) {
+                return [
+                    'label' => ucfirst($propertyName),
+                    'name' => $propertyName,
+                    'value' => ObjectAccess::getProperty($entity, $propertyName)
+                ];
+            }, $options['editableProperties']);
+            $this->view->assign('editableProperties', $editableProperties);
+        }
 
         $this->view->assignMultiple([
             'currentEntity' => $currentEntity,
             'currentAction' => $currentAction,
             'identifier' => $identifier,
             'options' => $options,
-            'editableProperties' => $editableProperties,
             'entity' => $entity,
+            'wizard' => $wizard,
+            'label' => $label,
         ]);
     }
 
@@ -125,7 +132,7 @@ class ContentObjectProxyController extends AbstractModuleController
 
         $data = array_map('trim', $data);
 
-        $valideRequest = true;
+        $validRequest = true;
         if (isset($options['uniqueProperty'])) {
             $query = $this->persistenceManager->createQueryForType($currentEntity);
             $nextValue = $data[$options['uniqueProperty']];
@@ -135,19 +142,27 @@ class ContentObjectProxyController extends AbstractModuleController
                     $options['uniqueProperty'],
                     $nextValue
                 ]);
-                $valideRequest = false;
+                $validRequest = false;
             }
         }
 
-        if ($valideRequest) {
-            $entity = $this->persistenceManager->getObjectByIdentifier($identifier, $currentEntity);
-
-            $processedEntity['nodes'] = $taskObject->execute($entity, $data, $this->createContentContext($this->userService->getPersonalWorkspaceName()), $this);
-
-            $this->addFlashMessage('Task "%s" executed with sucess', '', Message::SEVERITY_OK, [$taskObject->getLabel()]);
+        if ($validRequest) {
+            try {
+                $entity = $this->persistenceManager->getObjectByIdentifier($identifier, $currentEntity);
+                $processedEntity['nodes'] = $taskObject->execute($entity, $data, $this->createContentContext($this->userService->getPersonalWorkspaceName()), $this);
+                $this->addFlashMessage('Task "%s" executed with sucess', '', Message::SEVERITY_OK, [$taskObject->getLabel()]);
+                $this->forward('index', null, null, ['currentEntity' => $currentEntity]);
+            } catch (InvalidArgumentException $exception) {
+                $this->addFlashMessage('Task "%s" failed with message: ' . $exception->getMessage(), '', Message::SEVERITY_ERROR, [$taskObject->getLabel()]);
+                $this->forward('wizard', null, null, [
+                    'currentEntity' => $currentEntity,
+                    'currentAction' => $currentAction,
+                    'identifier' => $identifier
+                ]);
+            }
+        } else {
+            $this->addFlashMessage('Task "%s" is not valid', '', Message::SEVERITY_ERROR, [$taskObject->getLabel()]);
         }
-
-        $this->forward('index', null, null, ['currentEntity' => $currentEntity]);
     }
 
     /**
