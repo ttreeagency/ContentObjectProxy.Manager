@@ -7,26 +7,37 @@
         <tr>
             <th>Target</th>
             <th>Message</th>
-            <th>Node</th>
+            <th></th>
             <th></th>
         </tr>
         </thead>
         <tbody>
         <f:for each="{actions}" as="action">
             <tr>
-                <td>{action.node.label}</td>
+                <td>
+                    <f:if condition="{action.node}">
+                        <f:then>
+                            {action.node.label}
+                        </f:then>
+                        <f:else>
+                            <em>None</em>
+                        </f:else>
+                    </f:if>
+                </td>
                 <td>{action.message}</td>
                 <td>{action.node.identifier}</td>
                 <td class="neos-action">
                     <div class="neos-pull-right">
-                        <neos:link.node
-                                node="{action.node}"
-                                resolveShortcuts="FALSE"
-                                target="profile"
-                                rel="noopener"
-                                class="neos-button">
-                            <i class="icon-link"></i>
-                        </neos:link.node>
+                        <f:if condition="{action.node}">
+                            <neos:link.node
+                                    node="{action.node}"
+                                    resolveShortcuts="FALSE"
+                                    target="profile"
+                                    rel="noopener"
+                                    class="neos-button">
+                                <i class="icon-link"></i>
+                            </neos:link.node>
+                        </f:if>
                     </div>
                 </td>
             </tr>

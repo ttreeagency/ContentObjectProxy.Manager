@@ -124,7 +124,7 @@ class RemoveEntityTask implements EntityBasedTaskInterface
             $className = TypeHandling::getTypeForValue($currentEntity);
             $actionStack->stackAction([
                 'action' => 'removeEntity',
-                'message' => vsprintf('Entity %s (%s) can be safely remove, not used in the content repository', [
+                'message' => vsprintf('Entity %s of type "%s" can be safely remove, not used in the content repository', [
                     $identifier,
                     $className
                 ]),
