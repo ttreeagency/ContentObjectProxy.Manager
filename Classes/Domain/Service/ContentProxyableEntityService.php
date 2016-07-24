@@ -11,12 +11,11 @@ namespace Ttree\ContentObjectProxy\Manager\Domain\Service;
  * source code.
  */
 
-use Ttree\ContentObjectProxy\Manager\Contrat\LabelInterface;
+use Ttree\ContentObjectProxy\Manager\Contract\LabelInterface;
 use Ttree\ContentObjectProxy\Manager\Service\TaskService;
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\Flow\Object\ObjectManagerInterface;
 use TYPO3\Flow\Reflection\ReflectionService;
-use TYPO3\Flow\Utility\Arrays;
 
 /**
  * ContentProxyableEntityService

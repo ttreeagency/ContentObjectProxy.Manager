@@ -1,5 +1,5 @@
 <?php
-namespace Ttree\ContentObjectProxy\Manager\Domain\Model;
+namespace Ttree\ContentObjectProxy\Manager\Contract;
 
 /*
  * This file is part of the Ttree.ContentObjectProxy.Manager package.
@@ -16,17 +16,15 @@ use TYPO3\Flow\Annotations as Flow;
 use TYPO3\TYPO3CR\Domain\Service\Context;
 
 /**
- * EntityBasedTaskInterface
+ * BatchTaskInterface
  */
-interface EntityBasedTaskInterface extends TaskInterface
+interface BatchTaskInterface extends TaskInterface
 {
     /**
      * @param string $currentEntity
-     * @param array $data
      * @param Context $context
      * @param ContentObjectProxyController $controller
-     * @param \Closure $callback
-     * @return ActionStack
+     * @return array
      */
-    public function execute($currentEntity, array $data, Context $context, ContentObjectProxyController $controller, \Closure $callback = null);
+    public function execute($currentEntity, Context $context, ContentObjectProxyController $controller);
 }

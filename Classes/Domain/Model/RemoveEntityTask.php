@@ -11,6 +11,7 @@ namespace Ttree\ContentObjectProxy\Manager\Domain\Model;
  * source code.
  */
 
+use Ttree\ContentObjectProxy\Manager\Contract\EntityBasedTaskInterface;
 use Ttree\ContentObjectProxy\Manager\Controller\Module\ContentObjectProxyController;
 use Ttree\ContentObjectProxy\Manager\Exception;
 use Ttree\ContentObjectProxy\Manager\InvalidArgumentException;

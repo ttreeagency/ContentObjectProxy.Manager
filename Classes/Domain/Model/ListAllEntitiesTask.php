@@ -11,11 +11,10 @@ namespace Ttree\ContentObjectProxy\Manager\Domain\Model;
  * source code.
  */
 
+use Ttree\ContentObjectProxy\Manager\Contract\BatchTaskInterface;
 use Ttree\ContentObjectProxy\Manager\Controller\Module\ContentObjectProxyController;
 use TYPO3\Flow\Annotations as Flow;
-use TYPO3\Flow\Error\Message;
 use TYPO3\Flow\Persistence\PersistenceManagerInterface;
-use TYPO3\TYPO3CR\Domain\Model\NodeInterface;
 use TYPO3\TYPO3CR\Domain\Service\ContentProxyableEntityService;
 use TYPO3\TYPO3CR\Domain\Service\Context;
 

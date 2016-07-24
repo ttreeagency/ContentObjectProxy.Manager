@@ -11,9 +11,9 @@ namespace Ttree\ContentObjectProxy\Manager\Service;
  * source code.
  */
 
-use Ttree\ContentObjectProxy\Manager\Domain\Model\BatchTaskInterface;
-use Ttree\ContentObjectProxy\Manager\Domain\Model\EntityBasedTaskInterface;
-use Ttree\ContentObjectProxy\Manager\Domain\Model\TaskInterface;
+use Ttree\ContentObjectProxy\Manager\Contract\BatchTaskInterface;
+use Ttree\ContentObjectProxy\Manager\Contract\EntityBasedTaskInterface;
+use Ttree\ContentObjectProxy\Manager\Contract\TaskInterface;
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\Flow\Exception;
 use TYPO3\Flow\Object\ObjectManagerInterface;
@@ -79,7 +79,7 @@ class TaskService
 
     /**
      * @param string $identifier
-     * @return EntityBasedTaskInterface
+     * @return \Ttree\ContentObjectProxy\Manager\Contract\EntityBasedTaskInterface
      * @throws Exception
      */
     public function getEntityBasedTaskByIdentifier($identifier)
@@ -179,7 +179,7 @@ class TaskService
         $reflectionService = $objectManager->get(ReflectionService::class);
         $nodeImplementations = $reflectionService->getAllImplementationClassNamesForInterface($interface);
         $result = array_map(function ($entity) use ($reflectionService, $objectManager) {
-            /** @var TaskInterface $task */
+            /** @var \Ttree\ContentObjectProxy\Manager\Contract\TaskInterface $task */
             $task = $objectManager->get($entity);
             $properties = ObjectAccess::getGettableProperties($task);
             $properties['__className'] = $entity;

@@ -1,5 +1,5 @@
 <?php
-namespace Ttree\ContentObjectProxy\Manager\Contrat;
+namespace Ttree\ContentObjectProxy\Manager\Contract;
 
 /*
  * This file is part of the Ttree.ContentObjectProxy.Manager package.
@@ -14,12 +14,27 @@ namespace Ttree\ContentObjectProxy\Manager\Contrat;
 use TYPO3\Flow\Annotations as Flow;
 
 /**
- * BatchTaskInterface
+ * TaskInterface
  */
-interface LabelInterface
+interface TaskInterface
 {
     /**
      * @return string
      */
-    public static function getLabel();
+    public function getLabel();
+
+    /**
+     * @return string
+     */
+    public function getIconClass();
+
+    /**
+     * @return string
+     */
+    public function getButtonClass();
+
+    /**
+     * @return string
+     */
+    public function getDescription();
 }

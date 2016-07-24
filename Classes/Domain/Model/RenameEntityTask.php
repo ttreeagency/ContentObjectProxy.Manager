@@ -11,6 +11,7 @@ namespace Ttree\ContentObjectProxy\Manager\Domain\Model;
  * source code.
  */
 
+use Ttree\ContentObjectProxy\Manager\Contract\EntityBasedTaskInterface;
 use Ttree\ContentObjectProxy\Manager\Controller\Module\ContentObjectProxyController;
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\Flow\Error\Message;
