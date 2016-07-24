@@ -23,6 +23,9 @@ Ttree:
         'Ttree\ArchitectesCh\Domain\Model\Activity':
           label: 'Activity'
           actions:
+            'Ttree\ContentObjectProxy\Manager\Domain\Model\RemoveEntityTask':
+              label: 'Remove entity'
+              wizard: 'Remove'
             'Ttree\ContentObjectProxy\Manager\Domain\Model\RenameEntityTask':
               label: 'Rename entity'
               wizard: 'Rename'

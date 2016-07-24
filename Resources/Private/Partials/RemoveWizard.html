@@ -1,0 +1,39 @@
+{namespace neos=TYPO3\Neos\ViewHelpers}
+<div class="neos-module-container">
+    <fieldset>
+        <legend>{label}</legend>
+        <div class="neos-row-fluid neos-module-container">
+            <f:form.hidden name="currentAction"
+                           value="{currentAction}"/>
+            <f:form.hidden name="currentEntity"
+                           value="{currentEntity}"/>
+            <f:form.hidden name="identifier"
+                           value="{identifier}"/>
+
+            <div class="neos-controls">
+                <label class="neos-checkbox"
+                       for="confirm">
+                    <f:form.checkbox id="confirm"
+                                     name="data[confirm]"
+                                     value="1"/>
+                    <span></span>
+                    You can not recover this action, do you really want to delete this entity ?
+                </label>
+                <div class="neos-controls neos-controls-row">
+
+                </div>
+            </div>
+        </div>
+    </fieldset>
+</div>
+<div class="neos-footer">
+    <f:link.action action="index"
+                   class="neos-button"
+                   addQueryString="TRUE">
+        Cancel
+    </f:link.action>
+    <f:form.button type="submit"
+                   class="neos-button neos-button-danger">
+        Delete
+    </f:form.button>
+</div>
