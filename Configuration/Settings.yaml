@@ -4,7 +4,7 @@ TYPO3:
       management:
         submodules:
           contentobjectproxy:
-            label: 'Content Object Proxy Manager'
+            label: 'Proxy Manager'
             controller: 'Ttree\ContentObjectProxy\Manager\Controller\Module\ContentObjectProxyController'
             description: 'This module contains the content objet proxy manager.'
             icon: 'icon-plug'
