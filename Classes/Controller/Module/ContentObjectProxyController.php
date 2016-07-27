@@ -134,11 +134,13 @@ class ContentObjectProxyController extends AbstractModuleController
      */
     protected function initializeRunAction()
     {
-        $data = $this->request->getArgument('data');
-        if (is_string($data)) {
-            $data = json_decode($data, true);
-            if (is_array($data)) {
-                $this->request->setArgument('data', $data);
+        if ($this->request->hasArgument('data')) {
+            $data = $this->request->getArgument('data');
+            if (is_string($data)) {
+                $data = json_decode($data, true);
+                if (is_array($data)) {
+                    $this->request->setArgument('data', $data);
+                }
             }
         }
     }
