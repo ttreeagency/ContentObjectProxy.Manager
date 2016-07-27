@@ -7,6 +7,14 @@ privilegeTargets:
 
 roles:
 
+  'Ttree.ContentObjectProxy.Manager:Operator':
+
+    privileges:
+      -
+        privilegeTarget: 'Ttree.ContentObjectProxy.Manager:Backend.Module.ContentObjectProxyManager'
+        permission: GRANT
+
+
   'TYPO3.Neos:Administrator':
 
     privileges:
