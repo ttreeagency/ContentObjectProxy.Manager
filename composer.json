@@ -3,7 +3,8 @@
     "type": "neos-package",
     "description": "Backend module with helpers to manage content object proxy in the Neos Content Repository",
     "require": {
-        "typo3/flow": "*"
+        "typo3/flow": "*",
+        "webmozart/assert": "^1.0"
     },
     "autoload": {
         "psr-4": {
