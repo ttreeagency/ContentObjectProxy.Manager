@@ -24,20 +24,24 @@
 
         <div class="neos-content neos-container-fluid">
             <div class="neos-module-container">
-                <f:if condition="{actionStack.hasBlockers}">
-                    <fieldset>
-                        <legend>Blockers</legend>
-                        <div class="neos-row-fluid neos-module-container">
-                            <f:render partial="BlockerReport" arguments="{blockers: actionStack.blockers}"/>
-                        </div>
-                    </fieldset>
+                <f:if condition="{blocked}">
+                    <f:then>
+                        <fieldset>
+                            <legend>Blockers</legend>
+                            <div class="neos-row-fluid neos-module-container">
+                                <f:render partial="BlockerReport" arguments="{blockers: actionStack.blockers}"/>
+                            </div>
+                        </fieldset>
+                    </f:then>
+                    <f:else>
+                        <fieldset>
+                            <legend>Action Plan</legend>
+                            <div class="neos-row-fluid neos-module-container">
+                                <f:render partial="ActionStackReport" arguments="{actions: actionStack.actions}"/>
+                            </div>
+                        </fieldset>
+                    </f:else>
                 </f:if>
-                <fieldset>
-                    <legend>Action Stack</legend>
-                    <div class="neos-row-fluid neos-module-container">
-                        <f:render partial="ActionStackReport" arguments="{actions: actionStack.actions}"/>
-                    </div>
-                </fieldset>
             </div>
             <div class="neos-footer">
                 <f:link.action action="index"
@@ -45,7 +49,14 @@
                                addQueryString="TRUE">
                     Cancel
                 </f:link.action>
-                <f:if condition="{actionStack.hasBlockers}">
+                <f:if condition="{blocked}">
+                    <f:then>
+                        <f:form.button type="submit"
+                                       disabled="disabled"
+                                       class="neos-button neos-button-danger">
+                            Unable to execute, solve blockers first
+                        </f:form.button>
+                    </f:then>
                     <f:else>
                         <f:form.button type="submit"
                                        class="neos-button neos-button-danger">
@@ -53,6 +64,7 @@
                         </f:form.button>
                     </f:else>
                 </f:if>
+
             </div>
 
         </div>

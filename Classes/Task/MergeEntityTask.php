@@ -35,6 +35,8 @@ use TYPO3\TYPO3CR\Domain\Service\Context;
  */
 class MergeEntityTask implements EntityBasedTaskInterface
 {
+    use ProfileTrait;
+
     /**
      * @var NodeDataRepository
      * @Flow\Inject
@@ -145,6 +147,20 @@ class MergeEntityTask implements EntityBasedTaskInterface
                 $targetExistQuery = new FlowQuery([$parentNode]);
                 $targetExistQuery = $targetExistQuery->siblings(sprintf('[uriPathSegment="%s"]', $targetActivity->getUriPathSegment()));
 
+                $mainActivity = $this->getNodeMainActivity($node);
+                if ($mainActivity !== null) {
+                    $actionStack->addAction(new RemoveReferenceAction(
+                        $node,
+                        vsprintf('Activity reference "%s" can be unset', [
+                            $mainActivity->getLabel()
+                        ]),
+                        [
+                            'propertyName' => 'activities',
+                            'propertyValue' => $mainActivity
+                        ]
+                    ));
+                }
+
                 /** @var NodeInterface $targetMainActivity */
                 $targetMainActivity = $targetExistQuery->get(0);
                 if ($targetMainActivity === null) {
@@ -160,7 +176,7 @@ class MergeEntityTask implements EntityBasedTaskInterface
                             $parentNode->getProperty('uriPathSegment'),
                         ]),
                         [
-                            'target' => $targetActivity,
+                            'activity' => $targetActivity,
                             'parentNode' => $parentNode
                         ]
                     ));
@@ -193,26 +209,6 @@ class MergeEntityTask implements EntityBasedTaskInterface
                             ]
                         ));
                     }
-                }
-
-                // Remove previous activity from reference
-                $attachedActivities = array_filter($activities, function (NodeInterface $node) use ($currentEntity) {
-                    return $node->getLabel() === $currentEntity->getName();
-                });
-
-                if (count($attachedActivities) !== 0) {
-                    /** @var NodeInterface $currentMainActivity */
-                    $currentMainActivity = $attachedActivities[0];
-                    $actionStack->addAction(new RemoveReferenceAction(
-                        $node,
-                        vsprintf('Activity reference "%s" can be unset', [
-                            $currentMainActivity->getLabel()
-                        ]),
-                        [
-                            'propertyName' => 'activities',
-                            'propertyValue' => $currentMainActivity
-                        ]
-                    ));
                 }
             }, $node->getChildNodes('TYPO3.Neos:Document'));
         } else {

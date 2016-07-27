@@ -38,9 +38,9 @@ class CreateActivityNodeAndMoveAction extends AbstractAction
      */
     public function __construct(NodeInterface $node, $message, array $options, $icon = null)
     {
-        Assert::keyExists($options, 'target');
+        Assert::keyExists($options, 'activity');
         Assert::keyExists($options, 'parentNode');
-        Assert::isInstanceOf($options['target'], NodeInterface::class);
+        Assert::isInstanceOf($options['activity'], Activity::class);
         Assert::isInstanceOf($options['parentNode'], NodeInterface::class);
 
         parent::__construct($node, $message, $options, $icon);
@@ -52,8 +52,7 @@ class CreateActivityNodeAndMoveAction extends AbstractAction
     public function apply()
     {
         $parentNode = $this->getPartentNode();
-        /** @var Activity $activity */
-        $activity = $this->getTargetNode()->getContentObject();
+        $activity = $this->getActivity();
 
         $query = new FlowQuery([$parentNode]);
         $filter = sprintf('[instanceof Ttree.ArchitectesCh:Activity][uriPathSegment = "%s"]', $activity->getUriPathSegment());
@@ -70,6 +69,10 @@ class CreateActivityNodeAndMoveAction extends AbstractAction
             $activityNode = $parentNode->createNodeFromTemplate($template);
         }
 
+        $activities = $this->node->getProperty('activities');
+        array_unshift($activities, $activityNode);
+        $this->node->setProperty('activities', $activities);
+
         // Move node
         $this->node->moveInto($activityNode);
     }
@@ -83,10 +86,10 @@ class CreateActivityNodeAndMoveAction extends AbstractAction
     }
 
     /**
-     * @return NodeInterface
+     * @return Activity
      */
-    protected function getTargetNode()
+    protected function getActivity()
     {
-        return $this->options['target'];
+        return $this->options['activity'];
     }
 }

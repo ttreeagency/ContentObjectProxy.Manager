@@ -199,7 +199,10 @@ class ContentObjectProxyController extends AbstractModuleController
                             $this->addFlashMessage('Action plan executed', '', Message::SEVERITY_OK);
                             $this->persistenceManager->persistAll();
                             $result = $taskObject->execute($entity, $data, $this->createContentContext($this->userService->getPersonalWorkspaceName()), $this);
-                            $this->view->assign('actionStack', $result);
+                            $this->view->assignMultiple([
+                                'actionStack' => $result,
+                                'blocked' => $result->hasBlockers()
+                            ]);
                         } catch (\Exception $exception) {
                             $this->addFlashMessage('Action plan failed with message: ' . $exception->getMessage(), '', Message::SEVERITY_ERROR);
                         }

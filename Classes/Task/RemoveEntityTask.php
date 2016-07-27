@@ -38,6 +38,8 @@ use TYPO3\TYPO3CR\Domain\Service\Context;
  */
 class RemoveEntityTask implements EntityBasedTaskInterface
 {
+    use ProfileTrait;
+
     /**
      * @var NodeDataRepository
      * @Flow\Inject
@@ -153,12 +155,28 @@ class RemoveEntityTask implements EntityBasedTaskInterface
         }
         $activities = $node->getProperty('activities');
         if (count($activities) < 2) {
-            $actionStack->addBlocker(new Blocker($node, vsprintf('Not enough references (%d)', [count($activities)])));
+            $actionStack->addBlocker(new Blocker($node, vsprintf('Not enough references (%d), please add a least an other reference', [count($activities)])));
             return;
         }
+
         $parentNode = $node->getParent();
         /** @var NodeInterface $currentMainActivity */
         $currentMainActivity = $activities[0];
+
+        $mainActivity = $this->getNodeMainActivity($node);
+        if ($mainActivity !== null) {
+            $actionStack->addAction(new RemoveReferenceAction(
+                $node,
+                vsprintf('Activity reference "%s" can be unset', [
+                    $currentMainActivity->getLabel()
+                ]),
+                [
+                    'propertyName' => 'activities',
+                    'propertyValue' => $mainActivity
+                ]
+            ));
+        }
+
         /** @var NodeInterface $targetMainActivity */
         $targetMainActivity = $activities[1];
         $targetExistQuery = new FlowQuery([$parentNode]);
@@ -176,7 +194,7 @@ class RemoveEntityTask implements EntityBasedTaskInterface
                     $parentNode->getProperty('uriPathSegment'),
                 ]),
                 [
-                    'target' => $targetMainActivity,
+                    'activity' => $targetMainActivity->getContentObject(),
                     'parentNode' => $parentNode
                 ]
             ));
@@ -194,18 +212,7 @@ class RemoveEntityTask implements EntityBasedTaskInterface
                 ]
             ));
         }
-        // todo check if it's egal to the current activity !!!!
-        $mainActivity = $this->getNodeMainActivity($node);
-        $actionStack->addAction(new RemoveReferenceAction(
-            $node,
-            vsprintf('Activity reference "%s" can be unset', [
-                $currentMainActivity->getLabel()
-            ]),
-            [
-                'propertyName' => 'activities',
-                'propertyValue' => $mainActivity
-            ]
-        ));
+
         $actionStack->addAction(new AddReferenceAction(
             $node,
             vsprintf('Main activity can be set to "%s" (%s)', [
@@ -217,25 +224,5 @@ class RemoveEntityTask implements EntityBasedTaskInterface
                 'propertyValue' => $targetMainActivity
             ]
         ));
-    }
-
-    /**
-     * @param NodeInterface $node
-     * @return null|NodeInterface
-     */
-    protected function getNodeMainActivity(NodeInterface $node)
-    {
-        $closestActivityQuery = new FlowQuery([$node]);
-        /** @var NodeInterface $closestActivity */
-        $closestActivity = $closestActivityQuery->closest('[instanceof Ttree.ArchitectesCh:Activity]')->get(0);
-        $activities = $node->getProperty('activities');
-        if ($closestActivity === null) {
-            if (isset($activities[0])) {
-                return $activities[0];
-            } else {
-                return null;
-            }
-        }
-        return $closestActivity;
     }
 }
