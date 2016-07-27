@@ -1,5 +1,5 @@
 <?php
-namespace Ttree\ContentObjectProxy\Manager\Domain\Model;
+namespace Ttree\ContentObjectProxy\Manager\Task;
 
 /*
  * This file is part of the Ttree.ContentObjectProxy.Manager package.

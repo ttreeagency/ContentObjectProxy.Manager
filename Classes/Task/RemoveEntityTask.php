@@ -1,5 +1,5 @@
 <?php
-namespace Ttree\ContentObjectProxy\Manager\Domain\Model;
+namespace Ttree\ContentObjectProxy\Manager\Task;
 
 /*
  * This file is part of the Ttree.ContentObjectProxy.Manager package.
@@ -13,6 +13,7 @@ namespace Ttree\ContentObjectProxy\Manager\Domain\Model;
 
 use Ttree\ContentObjectProxy\Manager\Contract\EntityBasedTaskInterface;
 use Ttree\ContentObjectProxy\Manager\Controller\Module\ContentObjectProxyController;
+use Ttree\ContentObjectProxy\Manager\Domain\Model\ActionStack;
 use Ttree\ContentObjectProxy\Manager\Exception;
 use Ttree\ContentObjectProxy\Manager\InvalidArgumentException;
 use TYPO3\Eel\FlowQuery\FlowQuery;
