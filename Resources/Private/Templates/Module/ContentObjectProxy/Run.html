@@ -8,13 +8,19 @@
 </f:section>
 
 <f:section name="content">
-    <f:form action="apply">
+    <f:form action="run">
         <f:form.hidden name="currentAction"
                        value="{currentAction}"/>
         <f:form.hidden name="currentEntity"
                        value="{currentEntity}"/>
+        <f:form.hidden name="currentLabel"
+                       value="{currentLabel}"/>
         <f:form.hidden name="identifier"
                        value="{identifier}"/>
+        <f:form.hidden name="apply"
+                       value="TRUE"/>
+        <f:form.hidden name="data"
+                       value="{data}"/>
 
         <div class="neos-content neos-container-fluid">
             <div class="neos-module-container">

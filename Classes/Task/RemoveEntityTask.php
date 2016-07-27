@@ -14,6 +14,14 @@ namespace Ttree\ContentObjectProxy\Manager\Task;
 use Ttree\ContentObjectProxy\Manager\Contract\EntityBasedTaskInterface;
 use Ttree\ContentObjectProxy\Manager\Controller\Module\ContentObjectProxyController;
 use Ttree\ContentObjectProxy\Manager\Domain\Model\ActionStack;
+use Ttree\ContentObjectProxy\Manager\Domain\Model\AddReferenceAction;
+use Ttree\ContentObjectProxy\Manager\Domain\Model\Blocker;
+use Ttree\ContentObjectProxy\Manager\Domain\Model\CreateActivityNodeAndMoveAction;
+use Ttree\ContentObjectProxy\Manager\Domain\Model\MoveNodeAction;
+use Ttree\ContentObjectProxy\Manager\Domain\Model\RemoveEntityAction;
+use Ttree\ContentObjectProxy\Manager\Domain\Model\RemoveNodeAction;
+use Ttree\ContentObjectProxy\Manager\Domain\Model\RemoveReferenceAction;
+use Ttree\ContentObjectProxy\Manager\Domain\Model\SetMainActivityAction;
 use Ttree\ContentObjectProxy\Manager\Exception;
 use Ttree\ContentObjectProxy\Manager\InvalidArgumentException;
 use TYPO3\Eel\FlowQuery\FlowQuery;
@@ -98,7 +106,6 @@ class RemoveEntityTask implements EntityBasedTaskInterface
         $nodes = array_map(function ($nodeData) use ($context) {
             return $this->nodeFactory->createFromNodeData($nodeData, $context);
         }, $this->nodeDataRepository->findByContentObjectProxy($identifier, $context->getWorkspace()));
-
         $actionStack = new ActionStack();
         if (count($nodes) > 0) {
             /** @var NodeInterface $node */
@@ -106,13 +113,10 @@ class RemoveEntityTask implements EntityBasedTaskInterface
                 $query = new FlowQuery([$node]);
                 $filteredNodes = $query->find('[instanceof Ttree.ArchitectesCh:BaseEnterprise]')->get();
                 if (count($filteredNodes) === 0) {
-                    $actionStack->stackAction([
-                        'action' => 'removeNode',
-                        'message' => vsprintf('Node "%s" can be safely removed, no children nodes', [
-                            $node->getLabel()
-                        ]),
-                        'node' => $node,
-                    ]);
+                    $actionStack->addAction(new RemoveNodeAction(
+                            $node,
+                            vsprintf('Node "%s" can be safely removed, no children nodes', [$node->getLabel()]))
+                    );
                 } else {
                     /** @var NodeInterface $filteredNode */
                     foreach ($filteredNodes as $filteredNode) {
@@ -121,19 +125,18 @@ class RemoveEntityTask implements EntityBasedTaskInterface
                 }
             }
         }
-        if (!$actionStack->hasBlockers()) {
+        if (!$actionStack->hasBlockers() && $actionStack->countActions() === 0) {
             $className = TypeHandling::getTypeForValue($currentEntity);
-            $actionStack->stackAction([
-                'action' => 'removeEntity',
-                'message' => vsprintf('Entity %s of type "%s" can be safely remove, not used in the content repository', [
+            $actionStack->addAction(new RemoveEntityAction(
+                vsprintf('Entity %s of type "%s" can be safely remove, not used in the content repository', [
                     $identifier,
                     $className
                 ]),
-                'entity' => [
-                    'className' => $className,
+                [
+                    'objectType' => $className,
                     'identifier' => $identifier
                 ]
-            ]);
+            ));
         }
         return $actionStack;
     }
@@ -150,10 +153,7 @@ class RemoveEntityTask implements EntityBasedTaskInterface
         }
         $activities = $node->getProperty('activities');
         if (count($activities) < 2) {
-            $actionStack->stackBlocker([
-                'message' => vsprintf('Not enough references (%d)', [count($activities)]),
-                'node' => $node,
-            ]);
+            $actionStack->addBlocker(new Blocker($node, vsprintf('Not enough references (%d)', [count($activities)])));
             return;
         }
         $parentNode = $node->getParent();
@@ -163,44 +163,79 @@ class RemoveEntityTask implements EntityBasedTaskInterface
         $targetMainActivity = $activities[1];
         $targetExistQuery = new FlowQuery([$parentNode]);
         $targetExistQuery = $targetExistQuery->siblings(sprintf('[uriPathSegment="%s"]', $targetMainActivity->getProperty('uriPathSegment')));
-        if ($targetExistQuery->get(0) === null) {
-            $targetParentNode = null;
-            $actionStack->stackAction([
-                'action' => 'createActivityNodeAndMove',
-                'message' => vsprintf('Node "%s" (%s) need to be create bellow "%s" (%s)', [
+        /** @var NodeInterface $targetParentNode */
+        $targetParentNode = $targetExistQuery->get(0);
+        if ($targetParentNode === null) {
+            $parentNode = $parentNode->getParent();
+            $actionStack->addAction(new CreateActivityNodeAndMoveAction(
+                $node,
+                vsprintf('Node "%s" (%s) need to be create bellow "%s" (%s), before moving the current node', [
                     $targetMainActivity->getLabel(),
                     $targetMainActivity->getProperty('uriPathSegment'),
-                    $parentNode->getParent()->getLabel(),
-                    $parentNode->getParent()->getProperty('uriPathSegment'),
+                    $parentNode->getLabel(),
+                    $parentNode->getProperty('uriPathSegment'),
                 ]),
-                'node' => $node,
-                'target' => $targetMainActivity,
-                'parentNode' => $targetParentNode
-            ]);
+                [
+                    'target' => $targetMainActivity,
+                    'parentNode' => $parentNode
+                ]
+            ));
         } else {
-            $targetParentNode = $targetExistQuery->get(0);
+            $actionStack->addAction(new MoveNodeAction(
+                $node,
+                vsprintf('Node "%s" (%s) can be moved bellow "%s" (%s)', [
+                    $node->getLabel(),
+                    $node->getProperty('uriPathSegment'),
+                    $targetParentNode->getLabel(),
+                    $targetParentNode->getProperty('uriPathSegment'),
+                ]),
+                [
+                    'target' => $targetParentNode
+                ]
+            ));
         }
-        $actionStack->stackAction([
-            'action' => 'setMainActivity',
-            'message' => vsprintf('Main activity can be set to "%s" (%s), previously "%s" (%s)', [
-                $targetMainActivity->getLabel(),
-                $targetMainActivity->getProperty('uriPathSegment'),
-                $currentMainActivity->getLabel(),
-                $currentMainActivity->getProperty('uriPathSegment')
-            ]),
-            'node' => $node,
-            'target' => $targetMainActivity,
-            'parentNode' => $targetParentNode
-        ]);
         // todo check if it's egal to the current activity !!!!
-        $actionStack->stackAction([
-            'action' => 'removeReference',
-            'message' => vsprintf('Activity reference "%s" can be unset', [
+        $mainActivity = $this->getNodeMainActivity($node);
+        $actionStack->addAction(new RemoveReferenceAction(
+            $node,
+            vsprintf('Activity reference "%s" can be unset', [
                 $currentMainActivity->getLabel()
             ]),
-            'node' => $node,
-            'propertyName' => 'activities',
-            'propertyValue' => $currentMainActivity
-        ]);
+            [
+                'propertyName' => 'activities',
+                'propertyValue' => $mainActivity
+            ]
+        ));
+        $actionStack->addAction(new AddReferenceAction(
+            $node,
+            vsprintf('Main activity can be set to "%s" (%s)', [
+                $targetMainActivity->getLabel(),
+                $targetMainActivity->getProperty('uriPathSegment')
+            ]),
+            [
+                'propertyName' => 'activities',
+                'propertyValue' => $targetMainActivity
+            ]
+        ));
+    }
+
+    /**
+     * @param NodeInterface $node
+     * @return null|NodeInterface
+     */
+    protected function getNodeMainActivity(NodeInterface $node)
+    {
+        $closestActivityQuery = new FlowQuery([$node]);
+        /** @var NodeInterface $closestActivity */
+        $closestActivity = $closestActivityQuery->closest('[instanceof Ttree.ArchitectesCh:Activity]')->get(0);
+        $activities = $node->getProperty('activities');
+        if ($closestActivity === null) {
+            if (isset($activities[0])) {
+                return $activities[0];
+            } else {
+                return null;
+            }
+        }
+        return $closestActivity;
     }
 }

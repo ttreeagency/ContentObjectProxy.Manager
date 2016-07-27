@@ -15,6 +15,11 @@ use Ttree\ArchitectesCh\Domain\Model\Activity;
 use Ttree\ContentObjectProxy\Manager\Contract\EntityBasedTaskInterface;
 use Ttree\ContentObjectProxy\Manager\Controller\Module\ContentObjectProxyController;
 use Ttree\ContentObjectProxy\Manager\Domain\Model\ActionStack;
+use Ttree\ContentObjectProxy\Manager\Domain\Model\AddReferenceAction;
+use Ttree\ContentObjectProxy\Manager\Domain\Model\CreateActivityNodeAndMoveAction;
+use Ttree\ContentObjectProxy\Manager\Domain\Model\MoveNodeAction;
+use Ttree\ContentObjectProxy\Manager\Domain\Model\RemoveNodeAction;
+use Ttree\ContentObjectProxy\Manager\Domain\Model\RemoveReferenceAction;
 use Ttree\ContentObjectProxy\Manager\Exception;
 use Ttree\ContentObjectProxy\Manager\InvalidArgumentException;
 use TYPO3\Eel\FlowQuery\FlowQuery;
@@ -145,43 +150,48 @@ class MergeEntityTask implements EntityBasedTaskInterface
                 if ($targetMainActivity === null) {
                     // If the activity do not exist in the current position
                     $targetParentNode = null;
-                    $actionStack->stackAction([
-                        'action' => 'createActivityNodeAndMove',
-                        'message' => vsprintf('Node "%s" (%s) need to be create bellow "%s" (%s) before moving the node', [
+                    $parentNode = $parentNode->getParent();
+                    $actionStack->addAction(new CreateActivityNodeAndMoveAction(
+                        $node,
+                        vsprintf('Node "%s" (%s) need to be create bellow "%s" (%s) before moving the node', [
                             $targetActivity->getName(),
                             $targetActivity->getUriPathSegment(),
-                            $parentNode->getParent()->getLabel(),
-                            $parentNode->getParent()->getProperty('uriPathSegment'),
+                            $parentNode->getLabel(),
+                            $parentNode->getProperty('uriPathSegment'),
                         ]),
-                        'node' => $node,
-                        'parentNode' => $targetParentNode
-                    ]);
+                        [
+                            'target' => $targetActivity,
+                            'parentNode' => $parentNode
+                        ]
+                    ));
                 } else {
                     // Move node to the existing activity node
-                    $actionStack->stackAction([
-                        'action' => 'moveNode',
-                        'message' => vsprintf('Node can be moved bellow "%s" (%s)', [
+                    $actionStack->addAction(new MoveNodeAction(
+                        $node,
+                        vsprintf('Node can be moved bellow "%s" (%s)', [
                             $targetMainActivity->getLabel(),
                             $targetMainActivity->getProperty('uriPathSegment'),
                         ]),
-                        'node' => $node,
-                        'target' => $targetMainActivity
-                    ]);
+                        [
+                            'target' => $targetMainActivity
+                        ]
+                    ));
 
                     // Check if the activity references need to be updated
                     $attachedActivities = array_filter($activities, function (NodeInterface $node) use ($targetMainActivity) {
                         return $node->getLabel() === $targetMainActivity->getLabel();
                     });
                     if (count($attachedActivities) === 0) {
-                        $actionStack->stackAction([
-                            'action' => 'addReference',
-                            'message' => vsprintf('Activity reference "%s" must be set', [
+                        $actionStack->addAction(new AddReferenceAction(
+                            $node,
+                            vsprintf('Activity reference "%s" must be set', [
                                 $targetMainActivity->getLabel()
                             ]),
-                            'node' => $node,
-                            'propertyName' => 'activities',
-                            'propertyValue' => $targetMainActivity
-                        ]);
+                            [
+                                'propertyName' => 'activities',
+                                'propertyValue' => $targetMainActivity
+                            ]
+                        ));
                     }
                 }
 
@@ -193,25 +203,25 @@ class MergeEntityTask implements EntityBasedTaskInterface
                 if (count($attachedActivities) !== 0) {
                     /** @var NodeInterface $currentMainActivity */
                     $currentMainActivity = $attachedActivities[0];
-                    $actionStack->stackAction([
-                        'action' => 'removeReference',
-                        'message' => vsprintf('Activity reference "%s" can be unset', [
+                    $actionStack->addAction(new RemoveReferenceAction(
+                        $node,
+                        vsprintf('Activity reference "%s" can be unset', [
                             $currentMainActivity->getLabel()
                         ]),
-                        'node' => $node,
-                        'propertyName' => 'activities',
-                        'propertyValue' => $currentMainActivity
-                    ]);
+                        [
+                            'propertyName' => 'activities',
+                            'propertyValue' => $currentMainActivity
+                        ]
+                    ));
                 }
             }, $node->getChildNodes('TYPO3.Neos:Document'));
         } else {
-            $actionStack->stackAction([
-                'action' => 'removeNode',
-                'message' => vsprintf('Node "%s" can be safely removed, no children nodes', [
+            $actionStack->addAction(new RemoveNodeAction(
+                $node,
+                vsprintf('Node "%s" can be safely removed, no children nodes', [
                     $node->getLabel()
-                ]),
-                'node' => $node,
-            ]);
+                ])
+            ));
         }
     }
 

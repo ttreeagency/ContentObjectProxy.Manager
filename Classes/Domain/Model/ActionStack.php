@@ -24,25 +24,31 @@ class ActionStack
     protected $actions = [];
 
     /**
+     * @var integer
+     */
+    protected $actionCounter = 0;
+
+    /**
      * @var array
      */
     protected $blockers = [];
 
     /**
-     * @param array $action
+     * @param ActionInterface $action
      * @return $this
      */
-    public function stackAction(array $action)
+    public function addAction(ActionInterface $action)
     {
         $this->actions[] = $action;
+        $this->actionCounter++;
         return $this;
     }
 
     /**
-     * @param array $blocker
+     * @param Blocker $blocker
      * @return $this
      */
-    public function stackBlocker(array $blocker)
+    public function addBlocker(Blocker $blocker)
     {
         $this->blockers[] = $blocker;
         return $this;
@@ -65,11 +71,29 @@ class ActionStack
     }
 
     /**
+     * @return integer
+     */
+    public function countActions()
+    {
+        return $this->actionCounter;
+    }
+
+    /**
      * @return array
      */
     public function getBlockers()
     {
-        return $this->blockers;
+        $blockers = $this->blockers;
+        /**
+         * @var integer $key
+         * @var Blocker $blocker
+         */
+        foreach ($blockers as $key => $blocker) {
+            $label[$key] = strtolower($blocker->getNode()->getLabel());
+            $nodeType[$key] = $blocker->getNodeType();
+        }
+        array_multisort($nodeType, SORT_NATURAL, $label, SORT_NATURAL, $blockers);
+        return $blockers;
     }
 
 }

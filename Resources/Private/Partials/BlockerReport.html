@@ -3,20 +3,22 @@
     <table class="neos-table">
         <thead>
         <tr>
+            <th width="1%"></th>
             <th>Label</th>
-            <th>Identifier</th>
             <th>NodeType</th>
             <th>Message</th>
+            <th>Identifier</th>
             <th></th>
         </tr>
         </thead>
         <tbody>
         <f:for each="{blockers}" as="blocker">
             <tr>
+                <td><i class="{blocker.icon}"></i></td>
                 <td><b>{blocker.node.label}</b></td>
-                <td>{blocker.node.identifier}</td>
-                <td>{blocker.node.nodeType.name}</td>
+                <td>{blocker.nodeType}</td>
                 <td>{blocker.message}</td>
+                <td>{blocker.node.identifier}</td>
                 <td class="neos-action">
                     <div class="neos-pull-right">
                         <neos:link.node

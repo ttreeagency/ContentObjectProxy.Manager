@@ -3,7 +3,9 @@
     <table class="neos-table">
         <thead>
         <tr>
+            <th width="1%"></th>
             <th>Target</th>
+            <th>Workspace</th>
             <th>Message</th>
             <th></th>
             <th></th>
@@ -12,6 +14,7 @@
         <tbody>
         <f:for each="{actions}" as="action">
             <tr>
+                <td><i class="{action.icon}"></i></td>
                 <td>
                     <f:if condition="{action.node}">
                         <f:then>
@@ -23,6 +26,7 @@
                     </f:if>
                 </td>
                 <td>{action.message}</td>
+                <td>{action.node.workspace.name}</td>
                 <td>{action.node.identifier}</td>
                 <td class="neos-action">
                     <div class="neos-pull-right">

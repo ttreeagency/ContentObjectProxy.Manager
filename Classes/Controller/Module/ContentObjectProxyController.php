@@ -14,6 +14,7 @@ namespace Ttree\ContentObjectProxy\Manager\Controller\Module;
 use Ttree\ContentObjectProxy\Manager\Domain\Model\ActionStack;
 use Ttree\ContentObjectProxy\Manager\Domain\Service\ContentProxyableEntityService;
 use Ttree\ContentObjectProxy\Manager\InvalidArgumentException;
+use Ttree\ContentObjectProxy\Manager\Service\TaskRunnerService;
 use Ttree\ContentObjectProxy\Manager\Service\TaskService;
 use TYPO3\Flow\Annotations as Flow;
 use TYPO3\Flow\Error\Message;
@@ -41,6 +42,12 @@ class ContentObjectProxyController extends AbstractModuleController
      * @Flow\Inject
      */
     protected $taskService;
+
+    /**
+     * @var TaskRunnerService
+     * @Flow\Inject
+     */
+    protected $taskRunnerService;
 
     /**
      * @var ContentContextFactory
@@ -123,19 +130,33 @@ class ContentObjectProxyController extends AbstractModuleController
     }
 
     /**
+     * @return void
+     */
+    protected function initializeRunAction()
+    {
+        $data = $this->request->getArgument('data');
+        if (is_string($data)) {
+            $data = json_decode($data, true);
+            if (is_array($data)) {
+                $this->request->setArgument('data', $data);
+            }
+        }
+    }
+
+    /**
      * @param string $currentEntity
      * @param string $currentAction
      * @param string $identifier
      * @param string $currentLabel
      * @param array $data
+     * @param boolean $apply
      */
-    public function runAction($currentEntity, $currentAction, $identifier, $currentLabel, array $data = [])
+    public function runAction($currentEntity, $currentAction, $identifier, $currentLabel, array $data = [], $apply = false)
     {
         $options = $this->taskService->getActionOptions($currentEntity, $currentAction);
         $taskObject = $this->taskService->getEntityBasedTaskByIdentifier($currentAction);
 
         $data = array_map('trim', $data);
-
         $validRequest = true;
         if (isset($options['uniqueProperty'])) {
             $query = $this->persistenceManager->createQueryForType($currentEntity);
@@ -155,18 +176,34 @@ class ContentObjectProxyController extends AbstractModuleController
                 $entity = $this->persistenceManager->getObjectByIdentifier($identifier, $currentEntity);
                 $result = $taskObject->execute($entity, $data, $this->createContentContext($this->userService->getPersonalWorkspaceName()), $this);
                 $processedEntity['nodes'] = $result;
-                $this->addFlashMessage('Task "%s" executed with sucess', '', Message::SEVERITY_OK, [$taskObject->getLabel()]);
                 if (!$result instanceof ActionStack) {
                     $this->forward('index', null, null, ['currentEntity' => $currentEntity]);
                 } else {
+                    $blocked = $result->hasBlockers();
+                    if ($blocked) {
+                        $this->addFlashMessage('Task "%s" is blocked, check the blockers bellow, solve them and reload this page', '', Message::SEVERITY_WARNING, [$taskObject->getLabel()]);
+                    }
                     $this->view->assignMultiple([
                         'actionStack' => $result,
                         'currentEntity' => $currentEntity,
                         'currentAction' => $currentAction,
                         'currentActionLabel' => $taskObject->getLabel(),
                         'currentLabel' => $currentLabel,
-                        'identifier' => $identifier
+                        'identifier' => $identifier,
+                        'blocked' => $blocked,
+                        'data' => json_encode($data),
                     ]);
+                    if ($apply === true) {
+                        try {
+                            $this->taskRunnerService->apply($result);
+                            $this->addFlashMessage('Action plan executed', '', Message::SEVERITY_OK);
+                            $this->persistenceManager->persistAll();
+                            $result = $taskObject->execute($entity, $data, $this->createContentContext($this->userService->getPersonalWorkspaceName()), $this);
+                            $this->view->assign('actionStack', $result);
+                        } catch (\Exception $exception) {
+                            $this->addFlashMessage('Action plan failed with message: ' . $exception->getMessage(), '', Message::SEVERITY_ERROR);
+                        }
+                    }
                 }
             } catch (InvalidArgumentException $exception) {
                 $this->addFlashMessage('Task "%s" failed with message: ' . $exception->getMessage(), '', Message::SEVERITY_ERROR, [$taskObject->getLabel()]);
